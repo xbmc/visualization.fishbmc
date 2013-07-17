@@ -34,7 +34,7 @@ ADD_LIBRARY(fishbmc ${SOURCES})
 IF(NOT WIN32)
   TARGET_LINK_LIBRARIES(fishbmc ${OPENGL_LIBRARIES}
                                 ${GLEW_LIBRARIES}
-                                ${CMAKE_THREAD_LIBS_INIT}
+                                ${CMAKE_THREAD_LIBS_INIT})
   set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "-s")
   set(CMAKE_MODULE_LINKER_FLAGS_RELEASE "-s")
 ENDIF(NOT WIN32)
