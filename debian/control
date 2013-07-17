@@ -1,0 +1,15 @@
+Source: xbmc-visualization-fishbmc
+Priority: extra
+Maintainer: Arne Morten Kvarving <spiff@xbmc.org>
+Build-Depends: debhelper (>= 8.0.0), cmake, xbmc-addon-dev,
+               xbmc-visualization-dev, libgl1-mesa-dev, libglew-dev
+Standards-Version: 3.9.2
+Section: libs
+Homepage: http://xbmc.org
+
+Package: xbmc-visualization-fishbmc
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Fishbmc visualization for XBMC
+ Fishbmc visualization for XBMC
