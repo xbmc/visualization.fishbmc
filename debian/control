@@ -13,3 +13,11 @@ Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Fishbmc visualization for XBMC
  Fishbmc visualization for XBMC
+
+Package: xbmc-visualization-fishbmc-dbg
+Section: debug
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: debug symbols for Fishbmc visualization for XBMC
+ debug symbols for Fishbmc visualization for XBMC
+
