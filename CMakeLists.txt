@@ -9,27 +9,26 @@ FIND_PACKAGE(Threads REQUIRED)
 FIND_PACKAGE(OpenGL REQUIRED)
 FIND_PACKAGE(GLEW REQUIRED)
 
-addon_version(visualization.fishbmc FISH)
-
 ADD_DEFINITIONS(-DHAS_SDL_OPENGL)
 INCLUDE_DIRECTORIES(${OpenGL_INCLUDE_DIR}
                     ${GLEW_INCLUDE_DIR}
                     ${XBMC_INCLUDE_DIR})
 
-SET(SOURCES src/analyst.c
-            src/audiobuffer.c
-            src/blurengine.c
-            src/cpudetect.c
-            src/fische.c
-            src/fishbmc_addon.cpp
-            src/screenbuffer.c
-            src/vector.c
-            src/vectorfield.c
-            src/wavepainter.c)
+SET(FISH_SOURCES src/analyst.c
+                 src/audiobuffer.c
+                 src/blurengine.c
+                 src/cpudetect.c
+                 src/fische.c
+                 src/fishbmc_addon.cpp
+                 src/screenbuffer.c
+                 src/vector.c
+                 src/vectorfield.c
+                 src/wavepainter.c)
 
 SET(DEPLIBS ${OPENGL_LIBRARIES}
             ${GLEW_LIBRARIES}
             ${CMAKE_THREAD_LIBS_INIT})
 
-build_addon(visualization.fishbmc SOURCES DEPLIBS FISH_VERSION)
-install_addon(visualization.fishbmc ${FISH_VERSION})
+build_addon(visualization.fishbmc FISH DEPLIBS)
+
+include(CPack)
