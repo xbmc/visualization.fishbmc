@@ -1,20 +1,20 @@
-PROJECT(visualization.fishbmc)
+project(visualization.fishbmc)
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+cmake_minimum_required(VERSION 2.6)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})
 
-FIND_PACKAGE(xbmc REQUIRED)
-FIND_PACKAGE(Threads REQUIRED)
-FIND_PACKAGE(OpenGL REQUIRED)
-FIND_PACKAGE(GLEW REQUIRED)
+find_package(kodi REQUIRED)
+find_package(Threads REQUIRED)
+find_package(OpenGL REQUIRED)
+find_package(GLEW REQUIRED)
 
-ADD_DEFINITIONS(-DHAS_SDL_OPENGL)
-INCLUDE_DIRECTORIES(${OpenGL_INCLUDE_DIR}
+add_definitions(-DHAS_SDL_OPENGL)
+include_directories(${OpenGL_INCLUDE_DIR}
                     ${GLEW_INCLUDE_DIR}
-                    ${XBMC_INCLUDE_DIR})
+                    ${KODI_INCLUDE_DIR})
 
-SET(FISH_SOURCES src/analyst.c
+set(FISH_SOURCES src/analyst.c
                  src/audiobuffer.c
                  src/blurengine.c
                  src/cpudetect.c
@@ -25,7 +25,7 @@ SET(FISH_SOURCES src/analyst.c
                  src/vectorfield.c
                  src/wavepainter.c)
 
-SET(DEPLIBS ${OPENGL_LIBRARIES}
+set(DEPLIBS ${OPENGL_LIBRARIES}
             ${GLEW_LIBRARIES}
             ${CMAKE_THREAD_LIBS_INIT})
 
