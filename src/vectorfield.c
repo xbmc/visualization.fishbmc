@@ -20,7 +20,7 @@ struct field_param {
 
 unsigned int rand_seed;
 
-inline void
+static inline void
 _fische__vectorfield_randomize_ (fische__vector* vec)
 {
     vec->x += rand_r (&rand_seed) % 3;
@@ -30,7 +30,7 @@ _fische__vectorfield_randomize_ (fische__vector* vec)
 }
 
 
-inline void
+static inline void
 _fische__vectorfield_validate_ (struct _fische__vectorfield_* P,
                                 fische__vector* vec,
                                 double x,
