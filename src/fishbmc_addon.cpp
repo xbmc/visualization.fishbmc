@@ -19,8 +19,8 @@
 #define __cdecl
 #endif
 
-#include "kodi/xbmc_vis_types.h"
-#include "kodi/xbmc_vis_dll.h"
+#include "xbmc_vis_types.h"
+#include "xbmc_vis_dll.h"
 
 #include "fische.h"
 
