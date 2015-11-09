@@ -6,7 +6,7 @@
   provider-name="26elf">
   <extension
     point="xbmc.player.musicviz"
-    library_linux="visualization.fishbmc.so"
+    library_@PLATFORM@="@LIBRARY_FILENAME@"
     library_osx="visualization.fishbmc.so"/>
   <extension point="xbmc.addon.metadata">
     <summary lang="af">Visualisasie wat Golwe en Wasigheid effek wys</summary>
@@ -104,6 +104,6 @@
     <disclaimer lang="ta_IN">எதையாவது இது உடைக்குமேயானால், உடைந்த துகல்கள் உங்களுடையது.</disclaimer>
     <disclaimer lang="tg">Агар ин чизеро вайрон кунад, шумо қисмҳоро мегиред.</disclaimer>
     <disclaimer lang="zh">用者责任自负。</disclaimer>
-    <platform>linux osx</platform>
+    <platform>@PLATFORM@</platform>
   </extension>
 </addon>
