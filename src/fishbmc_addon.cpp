@@ -317,26 +317,12 @@ extern "C" void ADDON_Destroy()
     return;
 }
 
-extern "C" bool ADDON_HasSettings()
-{
-    return false;
-}
-
 extern "C" ADDON_STATUS ADDON_GetStatus()
 {
     if (g_errorstate)
         return ADDON_STATUS_UNKNOWN;
 
     return ADDON_STATUS_OK;
-}
-
-extern "C" unsigned int ADDON_GetSettings (ADDON_StructSetting ***sSet)
-{
-    return 0;
-}
-
-extern "C" void ADDON_FreeSettings()
-{
 }
 
 extern "C" ADDON_STATUS ADDON_SetSetting (const char *strSetting, const void* value)
@@ -371,8 +357,4 @@ extern "C" ADDON_STATUS ADDON_SetSetting (const char *strSetting, const void* va
     }
 
     return ADDON_STATUS_OK;
-}
-
-extern "C" void ADDON_Announce(const char *flag, const char *sender, const char *message, const void *data)
-{
 }
