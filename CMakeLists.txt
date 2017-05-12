@@ -24,6 +24,16 @@ set(FISH_SOURCES src/analyst.c
                  src/vectorfield.c
                  src/wavepainter.c)
 
+set(FISH_HEADERS src/analyst.h
+                 src/audiobuffer.h
+                 src/blurengine.h
+                 src/fische.h
+                 src/fische_internal.h
+                 src/screenbuffer.h
+                 src/vectorfield.h
+                 src/vector.h
+                 src/wavepainter.h)
+
 set(DEPLIBS ${OPENGL_LIBRARIES}
             ${CMAKE_THREAD_LIBS_INIT})
 
