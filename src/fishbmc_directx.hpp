@@ -8,9 +8,9 @@
 // declare a global texture
 // declare other globals you may need
 
-void init (VIS_PROPS* vis_props)
+void init (AddonProps_Visualization* AddonProps_Visualization)
 {
-    // take anything from the VIS_PROPS struct
+    // take anything from the AddonProps_Visualization struct
 }
 
 inline void init_texture (int width, int height, uint32_t* pixels)
