@@ -10,10 +10,6 @@
 // additional global variable
 GLuint      g_texture;
 
-
-// OpenGL: ignores AddonProps_Visualization
-void init (AddonProps_Visualization*) {}
-
 // OpenGL: texture initialization
 inline void init_texture (int width, int height, uint32_t* pixels)
 {

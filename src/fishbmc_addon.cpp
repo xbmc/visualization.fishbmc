@@ -15,12 +15,8 @@
  *   with this program; if not, write to the Free Software Foundation, Inc.,
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
-#ifdef __GNUC__
-#define __cdecl
-#endif
-
-#include "xbmc_vis_types.h"
-#include "xbmc_vis_dll.h"
+#include <kodi/addon-instance/Visualization.h>
+#include <kodi/General.h>
 
 #include "fische.h"
 
@@ -32,7 +28,6 @@
 #include <fstream>
 #include <sstream>
 #include <sys/stat.h>
-
 
 // global variables
 FISCHE*     g_fische;
@@ -49,10 +44,6 @@ bool        g_filemode;
 int         g_size;
 uint8_t*    g_axis = 0;
 
-
-
-
-
 // render functions
 // must be included AFTER global variables
 #if defined(_WIN32)
@@ -61,9 +52,22 @@ uint8_t*    g_axis = 0;
 #include "fishbmc_opengl.hpp"
 #endif // _WIN32
 
+class CVisualizationFishBMC
+  : public kodi::addon::CAddonBase,
+    public kodi::addon::CInstanceVisualization
+{
+public:
+  CVisualizationFishBMC();
+  virtual ~CVisualizationFishBMC();
 
+  virtual ADDON_STATUS GetStatus() override;
+  virtual bool Start(int channels, int samplesPerSec, int bitsPerSample, std::string songName) override;
+  virtual void Stop() override;
+  virtual void Render() override;
+  virtual void AudioData(const float* audioData, int audioDataLength, float *freqData, int freqDataLength) override;
+  virtual ADDON_STATUS SetSetting(const std::string& settingName, const kodi::CSettingValue& settingValue) override;
 
-
+};
 
 void on_beat (double frames_per_beat)
 {
@@ -140,69 +144,97 @@ void delete_vectors()
     }
 }
 
-extern "C" ADDON_STATUS ADDON_Create (void* hdl, void* props)
+CVisualizationFishBMC::CVisualizationFishBMC()
 {
-    if (!props)
-        return ADDON_STATUS_UNKNOWN;
+  g_fische = fische_new();
+  g_fische->on_beat = &on_beat;
+  g_fische->pixel_format = FISCHE_PIXELFORMAT_0xAABBGGRR;
+  g_fische->line_style = FISCHE_LINESTYLE_THICK;
+  g_aspect = double (Width()) / double (Height());
+  g_texleft = (2 - g_aspect) / 4;
+  g_texright = 1 - g_texleft;
+  g_filemode = kodi::GetSettingBoolean("filemode");
+  g_fische->nervous_mode = kodi::GetSettingBoolean("nervous") ? 1 : 0;
 
-    AddonProps_Visualization* visProps = (AddonProps_Visualization*) props;
+  int detail = kodi::GetSettingInt("detail");
+  g_size = 128;
+  while (detail--)
+  {
+    g_size *= 2;
+  }
 
-    init (visProps);
-
-    g_fische = fische_new();
-    g_fische->on_beat = &on_beat;
-    g_fische->pixel_format = FISCHE_PIXELFORMAT_0xAABBGGRR;
-    g_fische->line_style = FISCHE_LINESTYLE_THICK;
-    g_aspect = double (visProps->width) / double (visProps->height);
-    g_texleft = (2 - g_aspect) / 4;
-    g_texright = 1 - g_texleft;
-    g_framedivisor = 1;
-    g_filemode = false;
-    g_size = 128;
-
-    return ADDON_STATUS_NEED_SETTINGS;
+  int divisor = kodi::GetSettingInt("divisor");
+  g_framedivisor = 8;
+  while (divisor--)
+  {
+    g_framedivisor /= 2;
+  }
 }
 
-extern "C" void Start (int, int, int, const char*)
+CVisualizationFishBMC::~CVisualizationFishBMC()
 {
-    g_errorstate = false;
-
-    g_fische->audio_format = FISCHE_AUDIOFORMAT_FLOAT;
-
-    g_fische->height = g_size;
-    g_fische->width = 2 * g_size;
-
-    if (g_filemode) {
-        g_fische->read_vectors = &read_vectors;
-        g_fische->write_vectors = &write_vectors;
-    }
-
-    else {
-        delete_vectors();
-    }
-
-    if (fische_start (g_fische) != 0) {
-        std::cerr << "fische failed to start" << std::endl;
-        g_errorstate = true;
-        return;
-    }
-
-    uint32_t* pixels = fische_render (g_fische);
-
-    init_texture (g_fische->width, g_fische->height, pixels);
-
-    g_isrotating = false;
-    g_angle = 0;
-    g_lastangle = 0;
-    g_angleincrement = 0;
+  fische_free (g_fische);
+  g_fische = nullptr;
 }
 
-extern "C" void AudioData (const float* pAudioData, int iAudioDataLength, float*, int)
+bool CVisualizationFishBMC::Start(int channels, int samplesPerSec, int bitsPerSample, std::string songName)
+{
+  g_errorstate = false;
+
+  g_fische->audio_format = FISCHE_AUDIOFORMAT_FLOAT;
+
+  g_fische->height = g_size;
+  g_fische->width = 2 * g_size;
+
+  if (g_filemode)
+  {
+    g_fische->read_vectors = &read_vectors;
+    g_fische->write_vectors = &write_vectors;
+  }
+  else
+  {
+    delete_vectors();
+  }
+
+  if (fische_start (g_fische) != 0)
+  {
+    std::cerr << "fische failed to start" << std::endl;
+    g_errorstate = true;
+    return false;
+  }
+
+  uint32_t* pixels = fische_render (g_fische);
+
+  init_texture(g_fische->width, g_fische->height, pixels);
+
+  g_isrotating = false;
+  g_angle = 0;
+  g_lastangle = 0;
+  g_angleincrement = 0;
+  return true;
+}
+
+void CVisualizationFishBMC::Stop()
+{
+  delete_texture();
+  delete [] g_axis;
+  g_axis = nullptr;
+}
+
+ADDON_STATUS CVisualizationFishBMC::GetStatus()
+{
+  if (g_errorstate)
+    return ADDON_STATUS_UNKNOWN;
+
+  return ADDON_STATUS_OK;
+}
+
+void CVisualizationFishBMC::AudioData(const float* pAudioData, int iAudioDataLength, float*, int)
 {
     fische_audiodata (g_fische, pAudioData, iAudioDataLength * 4);
 }
 
-extern "C" void Render()
+void CVisualizationFishBMC::Render()
 {
     static int frame = 0;
 
@@ -271,90 +303,35 @@ extern "C" void Render()
     finish_render();
 }
 
-extern "C" void GetInfo (VIS_INFO* pInfo)
+ADDON_STATUS CVisualizationFishBMC::SetSetting(const std::string& settingName, const kodi::CSettingValue& settingValue)
 {
-    // std::cerr << "fishBMC::GetInfo" << std::endl;
-    pInfo->bWantsFreq = false;
-    pInfo->iSyncDelay = 0;
-}
+  if (settingName.empty() || settingValue.empty())
+      return ADDON_STATUS_UNKNOWN;
 
-extern "C" bool OnAction (long flags, const void *param)
-{
-    return false;
-}
-
-extern "C" unsigned int GetPresets (char ***presets)
-{
-    return 0;
-}
-
-extern "C" unsigned GetPreset()
-{
-    return 0;
-}
-
-extern "C" bool IsLocked()
-{
-    return false;
-}
-
-extern "C" unsigned int GetSubModules (char ***names)
-{
-    return 0;
-}
-
-extern "C" void Stop()
-{
-    fische_free (g_fische);
-    g_fische = 0;
-    delete_texture();
-    delete [] g_axis;
-    g_axis = 0;
-}
-
-extern "C" void ADDON_Destroy()
-{
-    return;
-}
-
-extern "C" ADDON_STATUS ADDON_GetStatus()
-{
-    if (g_errorstate)
-        return ADDON_STATUS_UNKNOWN;
-
-    return ADDON_STATUS_OK;
-}
-
-extern "C" ADDON_STATUS ADDON_SetSetting (const char *strSetting, const void* value)
-{
-    if (!strSetting || !value)
-        return ADDON_STATUS_UNKNOWN;
-
-    if (!strncmp (strSetting, "nervous", 7)) {
-        bool nervous = * ( (bool*) value);
-        g_fische->nervous_mode = nervous ? 1 : 0;
+  if (settingName == "nervous")
+    g_fische->nervous_mode = settingValue.GetBoolean() ? 1 : 0;
+  else if (settingName == "filemode")
+    g_filemode = settingValue.GetBoolean();
+  else if (settingName == "detail")
+  {
+    int detail = settingValue.GetInt();
+    g_size = 128;
+    while (detail--)
+    {
+      g_size *= 2;
     }
-
-    else if (!strncmp (strSetting, "filemode", 7)) {
-        bool filemode = * ( (bool*) value);
-        g_filemode = filemode;
+  }
+  else if (settingName == "divisor")
+  {
+    int divisor = settingValue.GetInt();
+    g_framedivisor = 8;
+    while (divisor--)
+    {
+      g_framedivisor /= 2;
     }
+  }
 
-    else if (!strncmp (strSetting, "detail", 6)) {
-        int detail = * ( (int*) value);
-        g_size = 128;
-        while (detail--) {
-            g_size *= 2;
-        }
-    }
-
-    else if (!strncmp (strSetting, "divisor", 7)) {
-        int divisor = * ( (int*) value);
-        g_framedivisor = 8;
-        while (divisor--) {
-            g_framedivisor /= 2;
-        }
-    }
-
-    return ADDON_STATUS_OK;
+  return ADDON_STATUS_OK;
 }
+
+ADDONCREATOR(CVisualizationFishBMC) // Don't touch this!
