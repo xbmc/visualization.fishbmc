@@ -11,7 +11,7 @@ find_package(OpenGL REQUIRED)
 add_definitions(-DHAS_SDL_OPENGL)
 include_directories(${OpenGL_INCLUDE_DIR}
                     ${GLEW_INCLUDE_DIR}
-                    ${KODI_INCLUDE_DIR})
+                    ${KODI_INCLUDE_DIR}/..) # Hack way with "/..", need bigger Kodi cmake rework to match right include ways (becomes done in future)
 
 set(FISH_SOURCES src/analyst.c
                  src/audiobuffer.c
