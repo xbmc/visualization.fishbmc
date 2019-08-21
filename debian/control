@@ -2,7 +2,8 @@ Source: xbmc-visualization-fishbmc
 Priority: extra
 Maintainer: Arne Morten Kvarving <spiff@xbmc.org>
 Build-Depends: debhelper (>= 8.0.0), cmake, xbmc-addon-dev,
-               libgl1-mesa-dev, libglew-dev
+               libgles2-mesa-dev [arm64 armhf], libgl1-mesa-dev [i386 amd64],
+               libglm-dev
 Standards-Version: 3.9.2
 Section: libs
 Homepage: http://xbmc.org
