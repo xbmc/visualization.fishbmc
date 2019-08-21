@@ -105,5 +105,12 @@
     <disclaimer lang="tg">Агар ин чизеро вайрон кунад, шумо қисмҳоро мегиред.</disclaimer>
     <disclaimer lang="zh">用者责任自负。</disclaimer>
     <platform>@PLATFORM@</platform>
+    <assets>
+      <icon>resources/icon.png</icon>
+      <fanart>resources/fanart.jpg</fanart>
+      <screenshot>resources/screenshot-01.jpg</screenshot>
+      <screenshot>resources/screenshot-02.jpg</screenshot>
+      <screenshot>resources/screenshot-03.jpg</screenshot>
+    </assets>
   </extension>
 </addon>
