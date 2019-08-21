@@ -12,7 +12,7 @@ if(NOT WIN32)
     set(DEPLIBS ${OPENGL_LIBRARIES})
     set(includes ${OPENGL_INCLUDE_DIR})
     add_definitions(${OPENGL_DEFINITIONS})
-  else()
+  elseif(APP_RENDER_SYSTEM STREQUAL "gles")
     find_package(OpenGLES REQUIRED)
     set(DEPLIBS ${OPENGLES_LIBRARIES})
     set(includes ${OPENGLES_INCLUDE_DIR})
@@ -22,7 +22,8 @@ endif()
 
 add_definitions(-DHAS_SDL_OPENGL)
 include_directories(${includes}
-                    ${KODI_INCLUDE_DIR}/..) # Hack way with "/..", need bigger Kodi cmake rework to match right include ways (becomes done in future)
+                    ${KODI_INCLUDE_DIR}/.. # Hack way with "/..", need bigger Kodi cmake rework to match right include ways (becomes done in future)
+                    ${PROJECT_SOURCE_DIR}/lib)
 
 set(FISH_SOURCES src/analyst.c
                  src/audiobuffer.c
