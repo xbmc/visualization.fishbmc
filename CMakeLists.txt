@@ -5,11 +5,23 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})
 
 find_package(Kodi REQUIRED)
 find_package(Threads REQUIRED)
-find_package(OpenGL REQUIRED)
+
+if(NOT WIN32)
+  if(APP_RENDER_SYSTEM STREQUAL "gl" OR NOT APP_RENDER_SYSTEM)
+    find_package(OpenGl REQUIRED)
+    set(DEPLIBS ${OPENGL_LIBRARIES})
+    set(includes ${OPENGL_INCLUDE_DIR})
+    add_definitions(${OPENGL_DEFINITIONS})
+  else()
+    find_package(OpenGLES REQUIRED)
+    set(DEPLIBS ${OPENGLES_LIBRARIES})
+    set(includes ${OPENGLES_INCLUDE_DIR})
+    add_definitions(${OPENGLES_DEFINITIONS})
+  endif()
+endif()
 
 add_definitions(-DHAS_SDL_OPENGL)
-include_directories(${OpenGL_INCLUDE_DIR}
-                    ${GLEW_INCLUDE_DIR}
+include_directories(${includes}
                     ${KODI_INCLUDE_DIR}/..) # Hack way with "/..", need bigger Kodi cmake rework to match right include ways (becomes done in future)
 
 set(FISH_SOURCES src/analyst.c
@@ -33,8 +45,7 @@ set(FISH_HEADERS src/analyst.h
                  src/vector.h
                  src/wavepainter.h)
 
-set(DEPLIBS ${OPENGL_LIBRARIES}
-            ${CMAKE_THREAD_LIBS_INIT})
+list(APPEND DEPLIBS ${CMAKE_THREAD_LIBS_INIT})
 
 build_addon(visualization.fishbmc FISH DEPLIBS)
 
