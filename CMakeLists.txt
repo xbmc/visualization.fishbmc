@@ -40,6 +40,7 @@ set(FISH_HEADERS src/analyst.h
                  src/audiobuffer.h
                  src/blurengine.h
                  src/fische.h
+                 src/fishbmc_addon.h
                  src/fische_internal.h
                  src/screenbuffer.h
                  src/vectorfield.h

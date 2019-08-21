@@ -224,7 +224,7 @@ fische_render (struct fische* handle)
         }
         if (analysis >= 4) {
             if (handle->on_beat)
-                handle->on_beat (P->analyst->frames_per_beat);
+                handle->on_beat (handle->handler, P->analyst->frames_per_beat);
         }
 
         P->audio_valid = analysis >= 0 ? 1 : 0;
