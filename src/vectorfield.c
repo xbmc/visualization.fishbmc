@@ -354,7 +354,7 @@ fische__vectorfield_new (struct fische* parent,
 
     // if we have stored fields, load them
     if (parent->read_vectors) {
-        size_t bytes = parent->read_vectors ( (void**) (&P->fields));
+        size_t bytes = parent->read_vectors (parent->handler, (void**) (&P->fields));
         if (bytes) {
             *progress = 1;
             P->n_fields = bytes / P->fieldsize;
@@ -394,7 +394,7 @@ fische__vectorfield_free (struct fische__vectorfield* self)
     struct _fische__vectorfield_* P = self->priv;
 
     if (!P->cancelled && P->fische->write_vectors) {
-        P->fische->write_vectors (P->fields, P->n_fields * P->fieldsize);
+        P->fische->write_vectors (P->fische->handler, P->fields, P->n_fields * P->fieldsize);
     }
 
     free (self->priv->fields);

@@ -59,17 +59,19 @@ typedef struct fische {
      * fische calls this to read vector fields from an external source
      * takes a void** for data placement
      * returns the number of bytes read */
-    size_t (*read_vectors) (void**);
+    size_t (*read_vectors) (void* handler, void**);
 
     /* if non-NULL,
      * fische calls this to write vector field data to an external sink
      * takes a void* and the number of bytes to be written */
-    void (*write_vectors) (const void*, size_t);
+    void (*write_vectors) (void* handler, const void*, size_t);
 
     /* if non-NULL,
      * fische calls this on major beats that are not handled internally
      * takes frames per beat */
-    void (*on_beat) (double);
+    void (*on_beat) (void* handler, double);
+
+    void* handler;
 
     /* read only */
     uint32_t    frame_counter;
