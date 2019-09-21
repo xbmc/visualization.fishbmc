@@ -2,8 +2,8 @@
 
 This is a [Kodi](http://kodi.tv) visualization addon.
 
-[![Build Status](https://travis-ci.org/notspiff/visualization.fishbmc.svg?branch=master)](https://travis-ci.org/notspiff/visualization.fishbmc)
-[![Build Status](https://ci.appveyor.com/api/projects/status/github/notspiff/visualization.fishbmc?svg=true)](https://ci.appveyor.com/project/notspiff/visualization-fishbmc)
+[![Build Status](https://travis-ci.org/xbmc/visualization.fishbmc.svg?branch=master)](https://travis-ci.org/xbmc/visualization.fishbmc)
+[![Build Status](https://ci.appveyor.com/api/projects/status/github/xbmc/visualization.fishbmc?svg=true)](https://ci.appveyor.com/project/xbmc/visualization-fishbmc)
 
 ## Build instructions
 
@@ -17,7 +17,7 @@ The following instructions assume you will have built Kodi already in the `kodi-
 suggested by the README.
 
 1. `git clone https://github.com/xbmc/xbmc.git`
-2. `git clone https://github.com/notspiff/visualization.fishbmc.git`
+2. `git clone https://github.com/xbmc/visualization.fishbmc.git`
 3. `cd visualization.fishbmc && mkdir build && cd build`
 4. `cmake -DADDONS_TO_BUILD=visualization.fishbmc -DADDON_SRC_PREFIX=../.. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=../../xbmc/kodi-build/addons -DPACKAGE_ZIP=1 ../../xbmc/cmake/addons`
 5. `make`
