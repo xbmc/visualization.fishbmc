@@ -1,24 +1,24 @@
-Source: xbmc-visualization-fishbmc
+Source: kodi-visualization-fishbmc
 Priority: extra
 Maintainer: Arne Morten Kvarving <spiff@xbmc.org>
-Build-Depends: debhelper (>= 8.0.0), cmake, xbmc-addon-dev,
+Build-Depends: debhelper (>= 8.0.0), cmake, kodi-addon-dev,
                libgles2-mesa-dev [arm64 armhf], libgl1-mesa-dev [i386 amd64],
                libglm-dev
 Standards-Version: 3.9.2
 Section: libs
-Homepage: http://xbmc.org
+Homepage: http://kodi.tv
 
-Package: xbmc-visualization-fishbmc
+Package: kodi-visualization-fishbmc
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: Fishbmc visualization for XBMC
- Fishbmc visualization for XBMC
+Description: Fishbmc visualization for Kodi
+ Fishbmc visualization for Kodi
 
-Package: xbmc-visualization-fishbmc-dbg
+Package: kodi-visualization-fishbmc-dbg
 Section: debug
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: debug symbols for Fishbmc visualization for XBMC
- debug symbols for Fishbmc visualization for XBMC
+Description: debug symbols for Fishbmc visualization for Kodi
+ debug symbols for Fishbmc visualization for Kodi
 
