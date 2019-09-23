@@ -26,7 +26,6 @@
 
 #include <cmath>
 #include <cstring>
-#include <unistd.h>
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -415,12 +414,8 @@ void CVisualizationFishBMC::write_vectors(void* handler, const void* data, size_
 
   CVisualizationFishBMC* thisClass = static_cast<CVisualizationFishBMC*>(handler);
 
-  char const * homedir = getenv("HOME");
-  if (!homedir)
-      return;
-
-  std::string dirname = std::string(homedir) + "/.fishBMC-data";
-  mkdir(dirname.c_str(), 0755);
+  std::string dirname = kodi::GetBaseUserPath("data");
+  kodi::vfs::CreateDirectory(dirname);
 
   std::ostringstream filename;
   filename << dirname << "/" << thisClass->m_fische->height;
@@ -442,12 +437,8 @@ size_t CVisualizationFishBMC::read_vectors(void* handler, void** data)
 
   CVisualizationFishBMC* thisClass = static_cast<CVisualizationFishBMC*>(handler);
 
-  char const * homedir = getenv("HOME");
-  if (!homedir)
-    return 0;
-
-  std::string dirname = std::string(homedir) + "/.fishBMC-data";
-  mkdir(dirname.c_str(), 0755);
+  std::string dirname = kodi::GetBaseUserPath("data");
+  kodi::vfs::CreateDirectory(dirname);
 
   std::ostringstream filename;
   filename << dirname << "/" << thisClass->m_fische->height;
@@ -470,18 +461,14 @@ size_t CVisualizationFishBMC::read_vectors(void* handler, void** data)
 
 void CVisualizationFishBMC::delete_vectors()
 {
-  char const * homedir = getenv("HOME");
-  if (!homedir)
-    return;
-
-  std::string dirname = std::string(homedir) + "/.fishBMC-data";
-  mkdir(dirname.c_str(), 0755);
+  std::string dirname = kodi::GetBaseUserPath("data");
+  kodi::vfs::CreateDirectory(dirname);
 
   for (int i = 64; i <= 2048; i *= 2)
   {
     std::ostringstream filename;
     filename << dirname << "/" << i;
-    unlink(filename.str().c_str());
+    kodi::vfs::DeleteFile(filename.str());
   }
 }
 
