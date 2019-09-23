@@ -11,6 +11,9 @@
 #include "audiobuffer.h"
 
 #ifdef WIN32
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 #define rand_r(_seed) (_seed == _seed ? rand() : rand())
 #endif
 
