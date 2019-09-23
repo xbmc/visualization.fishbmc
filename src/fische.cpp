@@ -2,7 +2,8 @@
 
 #include <string.h>
 #include <pthread.h>
-#include <unistd.h>
+#include <chrono>
+#include <thread>
 
 #ifdef DEBUG
 #include <stdio.h>
@@ -36,7 +37,7 @@ indicate_busy (void* arg)
     while ( (P->init_progress < 1) && (!P->init_cancel)) {
 
         if ( (P->init_progress < 0) || (P->init_progress == last)) {
-            usleep (10000);
+            std::this_thread::sleep_for(std::chrono::microseconds(10000));
             continue;
         }
 
@@ -267,7 +268,7 @@ fische_free (struct fische* handle)
 
         // wait for init threads to quit
         while (P->init_progress < 1)
-            usleep (10);
+            std::this_thread::sleep_for(std::chrono::microseconds(10));
 
         fische__audiobuffer_free (P->audiobuffer);
         fische__blurengine_free (P->blurengine);

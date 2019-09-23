@@ -1,7 +1,8 @@
 #include "fische_internal.h"
 
 #include <pthread.h>
-#include <unistd.h>
+#include <chrono>
+#include <thread>
 
 #ifdef DEBUG
 #include <stdio.h>
@@ -29,7 +30,7 @@ blur_worker (void* arg)
     while (!params->kill) {
 
         if (!params->work) {
-            usleep (1);
+            std::this_thread::sleep_for(std::chrono::microseconds(1));
             continue;
         }
 
@@ -159,7 +160,7 @@ fische__blurengine_swapbuffers (struct fische__blurengine* self)
         }
 
         if (work)
-            usleep (1);
+            std::this_thread::sleep_for(std::chrono::microseconds(1));
     }
 
     uint32_t* t = P->destinationbuffer;

@@ -3,7 +3,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#include <unistd.h>
+#include <chrono>
+#include <thread>
 
 struct fische__screenbuffer*
 fische__screenbuffer_new (struct fische* parent) {
@@ -71,10 +72,10 @@ fische__screenbuffer_lock (struct fische__screenbuffer* self)
 {
     #ifdef __GNUC__
     while ( !__sync_bool_compare_and_swap( &self->priv->is_locked, 0, 1 ) )
-        usleep( 1 );
+        std::this_thread::sleep_for(std::chrono::microseconds(1));
     #else
     while( self->priv->is_locked )
-        usleep( 1 );
+        std::this_thread::sleep_for(std::chrono::microseconds(1));
     self->priv->is_locked = 1;
     #endif
 }

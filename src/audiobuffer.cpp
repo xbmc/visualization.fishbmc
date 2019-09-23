@@ -1,6 +1,7 @@
 #include "fische_internal.h"
 
-#include <unistd.h>
+#include <chrono>
+#include <thread>
 #include <stdlib.h>
 #include <string.h>
 
@@ -166,10 +167,10 @@ fische__audiobuffer_lock (struct fische__audiobuffer* self)
 {
     #ifdef __GNUC__
     while ( !__sync_bool_compare_and_swap( &self->priv->is_locked, 0, 1 ) )
-        usleep( 1 );
+        std::this_thread::sleep_for(std::chrono::microseconds(1));
     #else
     while( self->priv->is_locked )
-        usleep( 1 );
+        std::this_thread::sleep_for(std::chrono::microseconds(1));
     self->priv->is_locked = 1;
     #endif
 }
