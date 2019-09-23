@@ -77,7 +77,7 @@ typedef struct fische {
     uint32_t    frame_counter;
 
     /* read only */
-    char*       error_text;
+    const char* error_text;
 
     void*       priv;
 

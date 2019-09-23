@@ -1,11 +1,11 @@
 #include "vector.h"
 
-inline double fische__vector_length (fische__vector* self)
+double fische__vector_length (fische__vector* self)
 {
     return sqrt (pow (self->x, 2) + pow (self->y, 2));
 }
 
-inline fische__vector fische__vector_normal (fische__vector* self)
+fische__vector fische__vector_normal (fische__vector* self)
 {
     fische__vector r;
     r.x = self->y;
@@ -13,7 +13,7 @@ inline fische__vector fische__vector_normal (fische__vector* self)
     return r;
 }
 
-inline fische__vector fische__vector_single (fische__vector* self)
+fische__vector fische__vector_single (fische__vector* self)
 {
     double l = fische__vector_length (self);
     fische__vector r;
@@ -22,7 +22,7 @@ inline fische__vector fische__vector_single (fische__vector* self)
     return r;
 }
 
-inline double fische__vector_angle (fische__vector* self)
+double fische__vector_angle (fische__vector* self)
 {
     fische__vector su = fische__vector_single (self);
     double a = acos (su.x);
@@ -31,7 +31,7 @@ inline double fische__vector_angle (fische__vector* self)
 }
 
 // conversion to 2x int8
-inline uint16_t fische__vector_to_uint16 (fische__vector* self)
+uint16_t fische__vector_to_uint16 (fische__vector* self)
 {
     if (self->x < -127) self->x = -127;
     if (self->x > 127) self->x = 127;
@@ -46,7 +46,7 @@ inline uint16_t fische__vector_to_uint16 (fische__vector* self)
     return retval;
 }
 
-inline fische__vector fische__vector_from_uint16 (uint16_t val)
+fische__vector fische__vector_from_uint16 (uint16_t val)
 {
     int8_t ix = val & 0xff;
     int8_t iy = val >> 8;
@@ -56,25 +56,25 @@ inline fische__vector fische__vector_from_uint16 (uint16_t val)
     return r;
 }
 
-inline void fische__vector_add (fische__vector* self, fische__vector* other)
+void fische__vector_add (fische__vector* self, fische__vector* other)
 {
     self->x += other->x;
     self->y += other->y;
 }
 
-inline void fische__vector_sub (fische__vector* self, fische__vector* other)
+void fische__vector_sub (fische__vector* self, fische__vector* other)
 {
     self->x -= other->x;
     self->y -= other->y;
 }
 
-inline void fische__vector_mul (fische__vector* self, double val)
+void fische__vector_mul (fische__vector* self, double val)
 {
     self->x *= val;
     self->y *= val;
 }
 
-inline void fische__vector_div (fische__vector* self, double val)
+void fische__vector_div (fische__vector* self, double val)
 {
     self->x /= val;
     self->y /= val;

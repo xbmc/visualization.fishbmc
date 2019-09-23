@@ -49,7 +49,7 @@ _fische__vectorfield_validate_ (struct _fische__vectorfield_* P,
 void*
 _fische__fill_thread_ (void* arg)
 {
-    struct field_param* params = arg;
+    struct field_param* params = static_cast<field_param*>(arg);
     uint16_t* field = params->data;
     int fieldno = params->number;
     struct _fische__vectorfield_* P = params->vecfield;
@@ -335,8 +335,8 @@ fische__vectorfield_new (struct fische* parent,
                          double* progress,
                          uint_fast8_t* cancel) {
 
-    struct fische__vectorfield* retval = malloc (sizeof (struct fische__vectorfield));
-    retval->priv = malloc (sizeof (struct _fische__vectorfield_));
+    struct fische__vectorfield* retval = static_cast<fische__vectorfield*>(malloc(sizeof(struct fische__vectorfield)));
+    retval->priv = static_cast<_fische__vectorfield_*>(malloc(sizeof(struct _fische__vectorfield_)));
     struct _fische__vectorfield_* P = retval->priv;
 
     rand_seed = time (NULL);
@@ -364,7 +364,7 @@ fische__vectorfield_new (struct fische* parent,
     }
 
     // if not, recalculate everything
-    P->fields = malloc (N_FIELDS * P->fieldsize);
+    P->fields = static_cast<uint16_t*>(malloc(N_FIELDS * P->fieldsize));
     P->n_fields = N_FIELDS;
 
     uint_fast8_t i;

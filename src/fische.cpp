@@ -11,8 +11,8 @@
 void*
 create_vectors (void* arg)
 {
-    struct fische* F = arg;
-    struct _fische__internal_ * P = F->priv;
+    struct fische* F = static_cast<fische*>(arg);
+    struct _fische__internal_ * P = static_cast<_fische__internal_*>(F->priv);
     P->vectorfield = fische__vectorfield_new (F,
                      &P->init_progress,
                      &P->init_cancel);
@@ -22,8 +22,8 @@ create_vectors (void* arg)
 void*
 indicate_busy (void* arg)
 {
-    struct fische* F = arg;
-    struct _fische__internal_ * P = F->priv;
+    struct fische* F = static_cast<fische*>(arg);
+    struct _fische__internal_ * P = static_cast<_fische__internal_*>(F->priv);
     struct fische__screenbuffer* sbuf = P->screenbuffer;
 
     fische__point center;
@@ -84,7 +84,7 @@ indicate_busy (void* arg)
 
 struct fische *
 fische_new() {
-    struct fische* retval = malloc (sizeof (struct fische));
+    struct fische* retval = static_cast<fische*>(malloc (sizeof (struct fische)));
 
     retval->used_cpus = _fische__cpu_detect_();
     if (retval->used_cpus > 8)
@@ -171,7 +171,7 @@ fische_start (struct fische* handle)
     // initialize private struct
     handle->priv = malloc (sizeof (struct _fische__internal_));
     memset (handle->priv, '\0', sizeof (struct _fische__internal_));
-    struct _fische__internal_* P = handle->priv;
+    struct _fische__internal_* P = static_cast<_fische__internal_*>(handle->priv);
 
     P->init_progress = -1;
 
@@ -196,7 +196,7 @@ fische_start (struct fische* handle)
 uint32_t*
 fische_render (struct fische* handle)
 {
-    struct _fische__internal_* P = handle->priv;
+    struct _fische__internal_* P = static_cast<_fische__internal_*>(handle->priv);
 
     // only if init completed
     if (P->init_progress >= 1) {
@@ -259,7 +259,7 @@ fische_free (struct fische* handle)
     if (!handle)
         return;
 
-    struct _fische__internal_* P = handle->priv;
+    struct _fische__internal_* P = static_cast<_fische__internal_*>(handle->priv);
 
     if (handle->priv) {
         // tell init threads to quit
@@ -285,7 +285,7 @@ fische_free (struct fische* handle)
 void
 fische_audiodata (struct fische* handle, const void* data, size_t data_size)
 {
-    struct _fische__internal_* P = handle->priv;
+    struct _fische__internal_* P = static_cast<_fische__internal_*>(handle->priv);
 
     if (NULL == P->audiobuffer)
         return;

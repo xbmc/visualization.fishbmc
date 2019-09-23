@@ -10,7 +10,7 @@
 void*
 blur_worker (void* arg)
 {
-    struct _fische__blurworker_* params = arg;
+    struct _fische__blurworker_* params = static_cast<_fische__blurworker_*>(arg);
 
     uint_fast16_t const width = params->width;
     uint_fast16_t const width_x2 = 2 * width;
@@ -83,8 +83,8 @@ blur_worker (void* arg)
 struct fische__blurengine*
 fische__blurengine_new (struct fische* parent) {
 
-    struct fische__blurengine* retval = malloc (sizeof (struct fische__blurengine));
-    retval->priv = malloc (sizeof (struct _fische__blurengine_));
+    struct fische__blurengine* retval = static_cast<fische__blurengine*>(malloc (sizeof (struct fische__blurengine)));
+    retval->priv = static_cast<_fische__blurengine_*>(malloc (sizeof (struct _fische__blurengine_)));
     struct _fische__blurengine_* P = retval->priv;
 
     P->fische = parent;
@@ -92,7 +92,7 @@ fische__blurengine_new (struct fische* parent) {
     P->height = parent->height;
     P->threads = parent->used_cpus;
     P->sourcebuffer = FISCHE_PRIVATE(P)->screenbuffer->pixels;
-    P->destinationbuffer = malloc (P->width * P->height * sizeof (uint32_t));
+    P->destinationbuffer = static_cast<uint32_t*>(malloc (P->width * P->height * sizeof (uint32_t)));
 
     uint_fast8_t i;
     for (i = 0; i < P->threads; ++ i) {

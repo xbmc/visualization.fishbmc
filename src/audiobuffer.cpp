@@ -11,8 +11,8 @@
 struct fische__audiobuffer*
 fische__audiobuffer_new (struct fische* parent) {
 
-    struct fische__audiobuffer* retval = malloc (sizeof (struct fische__audiobuffer));
-    retval->priv = malloc (sizeof (struct _fische__audiobuffer_));
+    struct fische__audiobuffer* retval = static_cast<fische__audiobuffer*>(malloc (sizeof (struct fische__audiobuffer)));
+    retval->priv = static_cast<_fische__audiobuffer_*>(malloc (sizeof (struct _fische__audiobuffer_)));
     struct _fische__audiobuffer_* P = retval->priv;
 
     P->fische = parent;
@@ -71,7 +71,7 @@ fische__audiobuffer_insert (struct fische__audiobuffer* self, const void* data, 
 
     uint_fast32_t old_bufsize = P->buffer_size;
     P->buffer_size += size / width;
-    P->buffer = realloc (P->buffer, P->buffer_size * sizeof (double));
+    P->buffer = static_cast<double*>(realloc (P->buffer, P->buffer_size * sizeof (double)));
 
     uint_fast32_t i;
     for (i = 0; i < size / width; ++ i) {
@@ -130,7 +130,7 @@ fische__audiobuffer_get (struct fische__audiobuffer* self)
 
     // pop used data off front
     memmove (P->buffer, new_start, P->buffer_size * sizeof (double));
-    P->buffer = realloc (P->buffer, P->buffer_size * sizeof (double));
+    P->buffer = static_cast<double*>(realloc (P->buffer, P->buffer_size * sizeof (double)));
 
     if (!P->puts)
         return;

@@ -10,8 +10,8 @@
 struct fische__wavepainter*
 fische__wavepainter_new (struct fische* parent) {
 
-    struct fische__wavepainter* retval = malloc (sizeof (struct fische__wavepainter));
-    retval->priv = malloc (sizeof (struct _fische__wavepainter_));
+    struct fische__wavepainter* retval = static_cast<fische__wavepainter*>(malloc(sizeof(struct fische__wavepainter)));
+    retval->priv = static_cast<_fische__wavepainter_*>(malloc(sizeof(struct _fische__wavepainter_)));
     struct _fische__wavepainter_* P = retval->priv;
 
     P->fische = parent;
