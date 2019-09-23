@@ -2,7 +2,7 @@
 #define BLURENGINE_H
 
 #include <stdint.h>
-#include <pthread.h>
+#include <thread>
 
 struct fische;
 
@@ -21,7 +21,7 @@ void                        fische__blurengine_swapbuffers (struct fische__blure
 
 
 struct _fische__blurworker_ {
-    pthread_t       thread_id;
+    std::thread*    thread;
     uint32_t*       source;
     uint32_t*       destination;
     uint_fast16_t   width;

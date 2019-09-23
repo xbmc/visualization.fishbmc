@@ -4,7 +4,6 @@ project(visualization.fishbmc)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})
 
 find_package(Kodi REQUIRED)
-find_package(Threads REQUIRED)
 find_package(glm REQUIRED)
 
 if(NOT WIN32 AND (APP_RENDER_SYSTEM STREQUAL "gl" OR NOT APP_RENDER_SYSTEM))
@@ -46,8 +45,6 @@ set(FISH_HEADERS src/analyst.h
                  src/vectorfield.h
                  src/vector.h
                  src/wavepainter.h)
-
-list(APPEND DEPLIBS ${CMAKE_THREAD_LIBS_INIT})
 
 build_addon(visualization.fishbmc FISH DEPLIBS)
 

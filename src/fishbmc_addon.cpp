@@ -21,6 +21,7 @@
  */
 
 #include "fishbmc_addon.h"
+#include "fische_internal.h"
 
 #include <kodi/General.h>
 

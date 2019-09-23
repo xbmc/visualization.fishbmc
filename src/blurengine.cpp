@@ -1,6 +1,5 @@
 #include "fische_internal.h"
 
-#include <pthread.h>
 #include <chrono>
 #include <thread>
 
@@ -8,11 +7,8 @@
 #include <stdio.h>
 #endif
 
-void*
-blur_worker (void* arg)
+void blur_worker (struct _fische__blurworker_* params)
 {
-    struct _fische__blurworker_* params = static_cast<_fische__blurworker_*>(arg);
-
     uint_fast16_t const width = params->width;
     uint_fast16_t const width_x2 = 2 * width;
     uint_fast16_t const y_start = params->y_start;
@@ -78,7 +74,7 @@ blur_worker (void* arg)
         params->work = 0;
     }
 
-    return 0;
+    return;
 }
 
 struct fische__blurengine*
@@ -106,7 +102,7 @@ fische__blurengine_new (struct fische* parent) {
         P->worker[i].kill = 0;
         P->worker[i].work = 0;
 
-        pthread_create (&P->worker[i].thread_id, NULL, blur_worker, &P->worker[i]);
+        P->worker[i].thread = new std::thread(blur_worker, &P->worker[i]);
     }
 
     return retval;
@@ -123,7 +119,9 @@ fische__blurengine_free (struct fische__blurengine* self)
     uint_fast8_t i;
     for (i = 0; i < P->threads; ++ i) {
         P->worker[i].kill = 1;
-        pthread_join (P->worker[i].thread_id, NULL);
+        P->worker[i].thread->join();
+        delete P->worker[i].thread;
+        P->worker[i].thread = nullptr;
     }
 
     free (self->priv->destinationbuffer);

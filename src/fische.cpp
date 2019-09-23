@@ -1,7 +1,7 @@
 #include "fische_internal.h"
 
 #include <string.h>
-#include <pthread.h>
+#include <thread>
 #include <chrono>
 #include <thread>
 
@@ -9,21 +9,17 @@
 #include <stdio.h>
 #endif
 
-void*
-create_vectors (void* arg)
+void create_vectors (fische* F)
 {
-    struct fische* F = static_cast<fische*>(arg);
     struct _fische__internal_ * P = static_cast<_fische__internal_*>(F->priv);
     P->vectorfield = fische__vectorfield_new (F,
                      &P->init_progress,
                      &P->init_cancel);
-    return 0;
+    return;
 }
 
-void*
-indicate_busy (void* arg)
+void indicate_busy (fische* F)
 {
-    struct fische* F = static_cast<fische*>(arg);
     struct _fische__internal_ * P = static_cast<_fische__internal_*>(F->priv);
     struct fische__screenbuffer* sbuf = P->screenbuffer;
 
@@ -80,7 +76,7 @@ indicate_busy (void* arg)
         fische__screenbuffer_unlock (sbuf);
     }
 
-    return 0;
+    return;
 }
 
 struct fische *
@@ -183,13 +179,8 @@ fische_start (struct fische* handle)
     P->audiobuffer = fische__audiobuffer_new (handle);
 
     // start vector creation and busy indicator threads
-    pthread_t vector_thread;
-    pthread_create (&vector_thread, NULL, create_vectors, handle);
-    pthread_detach (vector_thread);
-
-    pthread_t busy_thread;
-    pthread_create (&busy_thread, NULL, indicate_busy, handle);
-    pthread_detach (busy_thread);
+    std::thread(create_vectors, handle).detach();
+    std::thread(indicate_busy, handle).detach();
 
     return 0;
 }
