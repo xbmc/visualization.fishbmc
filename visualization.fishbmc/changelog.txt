@@ -1,3 +1,9 @@
+5.1.1 (2019-08-23)
+- Update .travis.yml to Leia
+- Add Jenkinsfile for test and binary repo upload
+- For persistence files use Kodi addon user folder, instead of $HOME
+- Switch to new language folder layout
+
 5.1.0 (2019-08-21)
 - Change to GL 4.0 and allow GLES 2.0
 - Add fanart and screenshoots
