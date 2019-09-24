@@ -1,3 +1,12 @@
+6.0.0 (2019-08-23)
+- Add with Angle support on Windows
+- Change "C" code to "CPP" to allow more platform independent programming
+- Use std::thread and std::this_thread::sleep_for instead of fixed OS way
+- Enable file buffer mode as default (confirmed on all OS)
+- Add AppVeyor for windows build tests (include also Winstore)
+- Update Jenkins for support on all OS and to use Kodi Matrix
+- Update travis to use xcode 10.2 for tests
+
 5.1.1 (2019-08-23)
 - Update .travis.yml to Leia
 - Add Jenkinsfile for test and binary repo upload
