@@ -29,8 +29,10 @@ _fische__guess_frames_per_beat_ (uint_fast16_t* beat_gap_history)
     int count = 0;
 
     uint_fast8_t i;
+    uint16_t value;
     for (i = 0; i < 30; ++ i) {
-        if (abs (gap_history_sorted[i] - guess) <= 2) {
+        value = gap_history_sorted[i] - guess;
+        if (abs(value) <= 2) {
             result += gap_history_sorted[i];
             ++ count;
         }
@@ -58,8 +60,8 @@ _fische__get_audio_level_ (double* data, uint_fast32_t data_size)
 struct fische__analyst*
 fische__analyst_new (struct fische* parent) {
 
-    struct fische__analyst* retval = malloc (sizeof (struct fische__analyst));
-    retval->priv = malloc (sizeof (struct _fische__analyst_));
+    struct fische__analyst* retval = static_cast<fische__analyst*>(malloc(sizeof (struct fische__analyst)));
+    retval->priv = static_cast<_fische__analyst_*>(malloc(sizeof(struct _fische__analyst_)));
 
     struct _fische__analyst_* P = retval->priv;
 
@@ -73,7 +75,7 @@ fische__analyst_new (struct fische* parent) {
     P->state = _FISCHE__WAITING_;
     P->std_dev = 0;
 
-    P->beat_gap_history = malloc (30 * sizeof (uint_fast16_t));
+    P->beat_gap_history = static_cast<uint_fast16_t*>(malloc(30 * sizeof(uint_fast16_t)));
     memset (P->beat_gap_history, '\0', 30 * sizeof (uint_fast16_t));
 
     retval->frames_per_beat = 0;

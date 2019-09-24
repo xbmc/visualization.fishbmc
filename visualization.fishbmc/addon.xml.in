@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon
   id="visualization.fishbmc"
-  version="5.1.1"
+  version="6.0.0"
   name="FishBMC"
   provider-name="26elf">
   <requires>@ADDON_DEPENDS@</requires>

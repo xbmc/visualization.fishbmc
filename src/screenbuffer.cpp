@@ -3,12 +3,13 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#include <unistd.h>
+#include <chrono>
+#include <thread>
 
 struct fische__screenbuffer*
 fische__screenbuffer_new (struct fische* parent) {
-    struct fische__screenbuffer* retval = malloc (sizeof (struct fische__screenbuffer));
-    retval->priv = malloc (sizeof (struct _fische__screenbuffer_));
+    struct fische__screenbuffer* retval = static_cast<fische__screenbuffer*>(malloc(sizeof(struct fische__screenbuffer)));
+    retval->priv = static_cast<_fische__screenbuffer_*>(malloc(sizeof(struct _fische__screenbuffer_)));
     struct _fische__screenbuffer_* P = retval->priv;
 
     P->fische = parent;
@@ -16,7 +17,7 @@ fische__screenbuffer_new (struct fische* parent) {
     P->height = parent->height;
     P->is_locked = 0;
 
-    retval->pixels = malloc (P->width * P->height * sizeof (uint32_t));
+    retval->pixels = static_cast<uint32_t*>(malloc(P->width * P->height * sizeof(uint32_t)));
     memset (retval->pixels, '\0', P->width * P->height * sizeof (uint32_t));
 
     switch (parent->pixel_format) {
@@ -71,10 +72,10 @@ fische__screenbuffer_lock (struct fische__screenbuffer* self)
 {
     #ifdef __GNUC__
     while ( !__sync_bool_compare_and_swap( &self->priv->is_locked, 0, 1 ) )
-        usleep( 1 );
+        std::this_thread::sleep_for(std::chrono::microseconds(1));
     #else
     while( self->priv->is_locked )
-        usleep( 1 );
+        std::this_thread::sleep_for(std::chrono::microseconds(1));
     self->priv->is_locked = 1;
     #endif
 }

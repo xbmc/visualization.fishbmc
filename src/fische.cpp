@@ -1,29 +1,26 @@
 #include "fische_internal.h"
 
 #include <string.h>
-#include <pthread.h>
-#include <unistd.h>
+#include <thread>
+#include <chrono>
+#include <thread>
 
 #ifdef DEBUG
 #include <stdio.h>
 #endif
 
-void*
-create_vectors (void* arg)
+void create_vectors (fische* F)
 {
-    struct fische* F = arg;
-    struct _fische__internal_ * P = F->priv;
+    struct _fische__internal_ * P = static_cast<_fische__internal_*>(F->priv);
     P->vectorfield = fische__vectorfield_new (F,
                      &P->init_progress,
                      &P->init_cancel);
-    return 0;
+    return;
 }
 
-void*
-indicate_busy (void* arg)
+void indicate_busy (fische* F)
 {
-    struct fische* F = arg;
-    struct _fische__internal_ * P = F->priv;
+    struct _fische__internal_ * P = static_cast<_fische__internal_*>(F->priv);
     struct fische__screenbuffer* sbuf = P->screenbuffer;
 
     fische__point center;
@@ -36,7 +33,7 @@ indicate_busy (void* arg)
     while ( (P->init_progress < 1) && (!P->init_cancel)) {
 
         if ( (P->init_progress < 0) || (P->init_progress == last)) {
-            usleep (10000);
+            std::this_thread::sleep_for(std::chrono::microseconds(10000));
             continue;
         }
 
@@ -79,12 +76,12 @@ indicate_busy (void* arg)
         fische__screenbuffer_unlock (sbuf);
     }
 
-    return 0;
+    return;
 }
 
 struct fische *
 fische_new() {
-    struct fische* retval = malloc (sizeof (struct fische));
+    struct fische* retval = static_cast<fische*>(malloc (sizeof (struct fische)));
 
     retval->used_cpus = _fische__cpu_detect_();
     if (retval->used_cpus > 8)
@@ -171,7 +168,7 @@ fische_start (struct fische* handle)
     // initialize private struct
     handle->priv = malloc (sizeof (struct _fische__internal_));
     memset (handle->priv, '\0', sizeof (struct _fische__internal_));
-    struct _fische__internal_* P = handle->priv;
+    struct _fische__internal_* P = static_cast<_fische__internal_*>(handle->priv);
 
     P->init_progress = -1;
 
@@ -182,13 +179,8 @@ fische_start (struct fische* handle)
     P->audiobuffer = fische__audiobuffer_new (handle);
 
     // start vector creation and busy indicator threads
-    pthread_t vector_thread;
-    pthread_create (&vector_thread, NULL, create_vectors, handle);
-    pthread_detach (vector_thread);
-
-    pthread_t busy_thread;
-    pthread_create (&busy_thread, NULL, indicate_busy, handle);
-    pthread_detach (busy_thread);
+    std::thread(create_vectors, handle).detach();
+    std::thread(indicate_busy, handle).detach();
 
     return 0;
 }
@@ -196,7 +188,7 @@ fische_start (struct fische* handle)
 uint32_t*
 fische_render (struct fische* handle)
 {
-    struct _fische__internal_* P = handle->priv;
+    struct _fische__internal_* P = static_cast<_fische__internal_*>(handle->priv);
 
     // only if init completed
     if (P->init_progress >= 1) {
@@ -259,7 +251,7 @@ fische_free (struct fische* handle)
     if (!handle)
         return;
 
-    struct _fische__internal_* P = handle->priv;
+    struct _fische__internal_* P = static_cast<_fische__internal_*>(handle->priv);
 
     if (handle->priv) {
         // tell init threads to quit
@@ -267,7 +259,7 @@ fische_free (struct fische* handle)
 
         // wait for init threads to quit
         while (P->init_progress < 1)
-            usleep (10);
+            std::this_thread::sleep_for(std::chrono::microseconds(10));
 
         fische__audiobuffer_free (P->audiobuffer);
         fische__blurengine_free (P->blurengine);
@@ -285,7 +277,7 @@ fische_free (struct fische* handle)
 void
 fische_audiodata (struct fische* handle, const void* data, size_t data_size)
 {
-    struct _fische__internal_* P = handle->priv;
+    struct _fische__internal_* P = static_cast<_fische__internal_*>(handle->priv);
 
     if (NULL == P->audiobuffer)
         return;

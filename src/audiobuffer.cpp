@@ -1,6 +1,7 @@
 #include "fische_internal.h"
 
-#include <unistd.h>
+#include <chrono>
+#include <thread>
 #include <stdlib.h>
 #include <string.h>
 
@@ -11,8 +12,8 @@
 struct fische__audiobuffer*
 fische__audiobuffer_new (struct fische* parent) {
 
-    struct fische__audiobuffer* retval = malloc (sizeof (struct fische__audiobuffer));
-    retval->priv = malloc (sizeof (struct _fische__audiobuffer_));
+    struct fische__audiobuffer* retval = static_cast<fische__audiobuffer*>(malloc (sizeof (struct fische__audiobuffer)));
+    retval->priv = static_cast<_fische__audiobuffer_*>(malloc (sizeof (struct _fische__audiobuffer_)));
     struct _fische__audiobuffer_* P = retval->priv;
 
     P->fische = parent;
@@ -71,7 +72,7 @@ fische__audiobuffer_insert (struct fische__audiobuffer* self, const void* data, 
 
     uint_fast32_t old_bufsize = P->buffer_size;
     P->buffer_size += size / width;
-    P->buffer = realloc (P->buffer, P->buffer_size * sizeof (double));
+    P->buffer = static_cast<double*>(realloc (P->buffer, P->buffer_size * sizeof (double)));
 
     uint_fast32_t i;
     for (i = 0; i < size / width; ++ i) {
@@ -130,7 +131,7 @@ fische__audiobuffer_get (struct fische__audiobuffer* self)
 
     // pop used data off front
     memmove (P->buffer, new_start, P->buffer_size * sizeof (double));
-    P->buffer = realloc (P->buffer, P->buffer_size * sizeof (double));
+    P->buffer = static_cast<double*>(realloc (P->buffer, P->buffer_size * sizeof (double)));
 
     if (!P->puts)
         return;
@@ -166,10 +167,10 @@ fische__audiobuffer_lock (struct fische__audiobuffer* self)
 {
     #ifdef __GNUC__
     while ( !__sync_bool_compare_and_swap( &self->priv->is_locked, 0, 1 ) )
-        usleep( 1 );
+        std::this_thread::sleep_for(std::chrono::microseconds(1));
     #else
     while( self->priv->is_locked )
-        usleep( 1 );
+        std::this_thread::sleep_for(std::chrono::microseconds(1));
     self->priv->is_locked = 1;
     #endif
 }

@@ -1,7 +1,7 @@
 #include "fische_internal.h"
 
 #include <stdlib.h>
-#include <pthread.h>
+#include <thread>
 #include <string.h>
 
 #ifdef DEBUG
@@ -46,10 +46,8 @@ _fische__vectorfield_validate_ (struct _fische__vectorfield_* P,
         vec->y -= 1;
 }
 
-void*
-_fische__fill_thread_ (void* arg)
+void _fische__fill_thread_(struct field_param* params)
 {
-    struct field_param* params = arg;
     uint16_t* field = params->data;
     int fieldno = params->number;
     struct _fische__vectorfield_* P = params->vecfield;
@@ -292,7 +290,7 @@ _fische__fill_thread_ (void* arg)
 
                 default:
                     // index too high. return nothing.
-                    return 0;
+                    return;
             }
 
             if (P->fische->blur_mode == FISCHE_BLUR_FUZZY)
@@ -302,7 +300,7 @@ _fische__fill_thread_ (void* arg)
             *vector = fische__vector_to_uint16 (&v);
         }
     }
-    return 0;
+    return;
 }
 
 void
@@ -311,7 +309,7 @@ _fische__fill_field_ (struct _fische__vectorfield_* P, uint_fast8_t fieldno)
     uint16_t* field = P->fields + fieldno * P->fieldsize / 2;
 
     // threads maximum is 8
-    pthread_t vec_threads[8];
+    std::thread vec_threads[8];
     struct field_param params[8];
 
     uint_fast8_t i;
@@ -322,11 +320,11 @@ _fische__fill_field_ (struct _fische__vectorfield_* P, uint_fast8_t fieldno)
         params[i].end_y = ( (i + 1) * P->height) / P->threads;
         params[i].vecfield = P;
 
-        pthread_create (&vec_threads[i], NULL, _fische__fill_thread_, &params[i]);
+        vec_threads[i] = std::thread(_fische__fill_thread_, &params[i]);
     }
 
     for (i = 0; i < P->threads; ++ i) {
-        pthread_join (vec_threads[i], NULL);
+        vec_threads[i].join();
     }
 }
 
@@ -335,8 +333,8 @@ fische__vectorfield_new (struct fische* parent,
                          double* progress,
                          uint_fast8_t* cancel) {
 
-    struct fische__vectorfield* retval = malloc (sizeof (struct fische__vectorfield));
-    retval->priv = malloc (sizeof (struct _fische__vectorfield_));
+    struct fische__vectorfield* retval = static_cast<fische__vectorfield*>(malloc(sizeof(struct fische__vectorfield)));
+    retval->priv = static_cast<_fische__vectorfield_*>(malloc(sizeof(struct _fische__vectorfield_)));
     struct _fische__vectorfield_* P = retval->priv;
 
     rand_seed = time (NULL);
@@ -364,7 +362,7 @@ fische__vectorfield_new (struct fische* parent,
     }
 
     // if not, recalculate everything
-    P->fields = malloc (N_FIELDS * P->fieldsize);
+    P->fields = static_cast<uint16_t*>(malloc(N_FIELDS * P->fieldsize));
     P->n_fields = N_FIELDS;
 
     uint_fast8_t i;

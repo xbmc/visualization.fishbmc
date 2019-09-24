@@ -1,17 +1,14 @@
 #include "fische_internal.h"
 
-#include <pthread.h>
-#include <unistd.h>
+#include <chrono>
+#include <thread>
 
 #ifdef DEBUG
 #include <stdio.h>
 #endif
 
-void*
-blur_worker (void* arg)
+void blur_worker (struct _fische__blurworker_* params)
 {
-    struct _fische__blurworker_* params = arg;
-
     uint_fast16_t const width = params->width;
     uint_fast16_t const width_x2 = 2 * width;
     uint_fast16_t const y_start = params->y_start;
@@ -29,7 +26,7 @@ blur_worker (void* arg)
     while (!params->kill) {
 
         if (!params->work) {
-            usleep (1);
+            std::this_thread::sleep_for(std::chrono::microseconds(1));
             continue;
         }
 
@@ -77,14 +74,14 @@ blur_worker (void* arg)
         params->work = 0;
     }
 
-    return 0;
+    return;
 }
 
 struct fische__blurengine*
 fische__blurengine_new (struct fische* parent) {
 
-    struct fische__blurengine* retval = malloc (sizeof (struct fische__blurengine));
-    retval->priv = malloc (sizeof (struct _fische__blurengine_));
+    struct fische__blurengine* retval = static_cast<fische__blurengine*>(malloc (sizeof (struct fische__blurengine)));
+    retval->priv = static_cast<_fische__blurengine_*>(malloc (sizeof (struct _fische__blurengine_)));
     struct _fische__blurengine_* P = retval->priv;
 
     P->fische = parent;
@@ -92,7 +89,7 @@ fische__blurengine_new (struct fische* parent) {
     P->height = parent->height;
     P->threads = parent->used_cpus;
     P->sourcebuffer = FISCHE_PRIVATE(P)->screenbuffer->pixels;
-    P->destinationbuffer = malloc (P->width * P->height * sizeof (uint32_t));
+    P->destinationbuffer = static_cast<uint32_t*>(malloc (P->width * P->height * sizeof (uint32_t)));
 
     uint_fast8_t i;
     for (i = 0; i < P->threads; ++ i) {
@@ -105,7 +102,7 @@ fische__blurengine_new (struct fische* parent) {
         P->worker[i].kill = 0;
         P->worker[i].work = 0;
 
-        pthread_create (&P->worker[i].thread_id, NULL, blur_worker, &P->worker[i]);
+        P->worker[i].thread = new std::thread(blur_worker, &P->worker[i]);
     }
 
     return retval;
@@ -122,7 +119,9 @@ fische__blurengine_free (struct fische__blurengine* self)
     uint_fast8_t i;
     for (i = 0; i < P->threads; ++ i) {
         P->worker[i].kill = 1;
-        pthread_join (P->worker[i].thread_id, NULL);
+        P->worker[i].thread->join();
+        delete P->worker[i].thread;
+        P->worker[i].thread = nullptr;
     }
 
     free (self->priv->destinationbuffer);
@@ -159,7 +158,7 @@ fische__blurengine_swapbuffers (struct fische__blurengine* self)
         }
 
         if (work)
-            usleep (1);
+            std::this_thread::sleep_for(std::chrono::microseconds(1));
     }
 
     uint32_t* t = P->destinationbuffer;

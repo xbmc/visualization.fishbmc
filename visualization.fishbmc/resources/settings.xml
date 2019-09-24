@@ -32,7 +32,7 @@
           <control type="toggle" />
         </setting>
         <setting id="filemode" type="boolean" label="30011" help="0">
-          <default>false</default>
+          <default>true</default>
           <control type="toggle" />
         </setting>
       </group>
