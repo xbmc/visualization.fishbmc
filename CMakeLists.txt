@@ -20,6 +20,7 @@ endif()
 
 add_definitions(-DHAS_SDL_OPENGL)
 include_directories(${includes}
+                    ${GLM_INCLUDE_DIR}
                     ${KODI_INCLUDE_DIR}/.. # Hack way with "/..", need bigger Kodi cmake rework to match right include ways (becomes done in future)
                     ${PROJECT_SOURCE_DIR}/lib)
 
