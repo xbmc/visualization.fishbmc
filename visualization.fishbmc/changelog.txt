@@ -1,3 +1,8 @@
+6.0.1 (2019-10-09)
+- Add license name and source URL to addon.xml
+- Update debian packaging
+- Kodi visualization API change
+
 6.0.0 (2019-08-23)
 - Add with Angle support on Windows
 - Change "C" code to "CPP" to allow more platform independent programming
