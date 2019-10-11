@@ -52,14 +52,14 @@ class ATTRIBUTE_HIDDEN CVisualizationFishBMC
 {
 public:
   CVisualizationFishBMC();
-  virtual ~CVisualizationFishBMC();
+  ~CVisualizationFishBMC() override;
 
-  virtual ADDON_STATUS GetStatus() override;
-  virtual bool Start(int channels, int samplesPerSec, int bitsPerSample, std::string songName) override;
-  virtual void Stop() override;
-  virtual void Render() override;
-  virtual void AudioData(const float* audioData, int audioDataLength, float *freqData, int freqDataLength) override;
-  virtual ADDON_STATUS SetSetting(const std::string& settingName, const kodi::CSettingValue& settingValue) override;
+  ADDON_STATUS GetStatus() override;
+  bool Start(int channels, int samplesPerSec, int bitsPerSample, std::string songName) override;
+  void Stop() override;
+  void Render() override;
+  void AudioData(const float* audioData, int audioDataLength, float *freqData, int freqDataLength) override;
+  ADDON_STATUS SetSetting(const std::string& settingName, const kodi::CSettingValue& settingValue) override;
 
   void OnCompiledAndLinked() override;
   bool OnEnabled() override;
