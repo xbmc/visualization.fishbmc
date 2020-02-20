@@ -3,7 +3,8 @@
 This is a [Kodi](http://kodi.tv) visualization addon.
 
 [![Build Status](https://travis-ci.org/xbmc/visualization.fishbmc.svg?branch=Matrix)](https://travis-ci.org/xbmc/visualization.fishbmc/branches)
-[![Build Status](https://ci.appveyor.com/api/projects/status/github/xbmc/visualization.fishbmc?branch=Matrix&svg=true)](https://ci.appveyor.com/project/xbmc/visualization-fishbmc?branch=Matrix)
+[![Build Status](https://dev.azure.com/teamkodi/binary-addons/_apis/build/status/xbmc.visualization.fishbmc?branchName=Matrix)](https://dev.azure.com/teamkodi/binary-addons/_build/latest?definitionId=39&branchName=Matrix)
+<!--- [![Build Status](https://ci.appveyor.com/api/projects/status/github/xbmc/visualization.fishbmc?branch=Matrix&svg=true)](https://ci.appveyor.com/project/xbmc/visualization-fishbmc?branch=Matrix) -->
 
 ![screenshot](https://raw.githubusercontent.com/xbmc/visualization.fishbmc/master/visualization.fishbmc/resources/screenshot-01.jpg)
 
