@@ -3,7 +3,6 @@
 This is a [Kodi](http://kodi.tv) visualization addon.
 
 [![Build Status](https://travis-ci.org/xbmc/visualization.fishbmc.svg?branch=Leia)](https://travis-ci.org/xbmc/visualization.fishbmc/branches)
-[![Build Status](https://ci.appveyor.com/api/projects/status/github/xbmc/visualization.fishbmc?svg=true)](https://ci.appveyor.com/project/xbmc/visualization-fishbmc)
 
 ![screenshot](https://raw.githubusercontent.com/xbmc/visualization.fishbmc/master/visualization.fishbmc/resources/screenshot-01.jpg)
 
