@@ -1,3 +1,11 @@
+/*
+ *  Copyright (C) 2005-2020 Team Kodi (https://kodi.tv)
+ *  Copyright (C) 2012 Marcel Ebmer
+ *
+ *  SPDX-License-Identifier: GPL-2.0-or-later
+ *  See LICENSE.md for more information.
+ */
+
 #include "vector.h"
 
 double fische__vector_length (fische__vector* self)

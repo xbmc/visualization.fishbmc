@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon
   id="visualization.fishbmc"
-  version="6.0.1"
+  version="6.1.0"
   name="FishBMC"
   provider-name="26elf">
   <requires>@ADDON_DEPENDS@</requires>
@@ -105,7 +105,7 @@
     <disclaimer lang="tg_tj">Агар ин чизеро вайрон кунад, шумо қисмҳоро мегиред.</disclaimer>
     <disclaimer lang="zh_CN">用者责任自负。</disclaimer>
     <platform>@PLATFORM@</platform>
-    <license>GPL-2.0</license>
+    <license>GPL-2.0-or-later</license>
     <source>https://github.com/xbmc/visualization.fishbmc</source>
     <assets>
       <icon>resources/icon.png</icon>
