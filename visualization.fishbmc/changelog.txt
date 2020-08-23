@@ -1,3 +1,8 @@
+6.2.0 (2020-08-21)
+- Kodi API change update
+- Debian build improvement
+- Fix language codes within addon.xml by tg_TJ (was lowercase before)
+
 6.1.0 (2020-05-16)
 - Kodi API change update
 - Minor cleanups
