@@ -16,6 +16,18 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
 
+msgctxt "Addon Summary"
+msgid "Visualisation showing Waves and Blur Effects"
+msgstr "إسلوب تخيلي يُظهِر مؤثراتاً بصرية تتضمن موجات ومؤثرات عين السمكة (مؤثرات ضبابية)"
+
+msgctxt "Addon Description"
+msgid "fishBMC is based on fische, a standalone sound visualisation tool. The basic principle is: draw the waveform and smear the drawing along predefined vectors. However fische also incorporates advanced beat detection, which really guarantees a great visual experience."
+msgstr ""
+
+msgctxt "Addon Disclaimer"
+msgid "If this breaks anything, the pieces remain yours."
+msgstr "إذا سبب هذا تحطم أى شيئ، فستبقي القطع ملكك!"
+
 # settings labels
 msgctxt "#30000"
 msgid "Detail [CPU intensive]"
