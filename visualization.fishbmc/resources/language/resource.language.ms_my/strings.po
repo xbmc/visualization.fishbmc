@@ -28,7 +28,7 @@ msgctxt "Addon Disclaimer"
 msgid "If this breaks anything, the pieces remain yours."
 msgstr ""
 
-#settings labels
+# settings labels
 msgctxt "#30000"
 msgid "Detail [CPU intensive]"
 msgstr ""
