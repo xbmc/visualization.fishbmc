@@ -7,16 +7,16 @@
  */
 
 #include "fishbmc_addon.h"
-#include "fische_internal.h"
 
-#include <kodi/General.h>
+#include "fische_internal.h"
 
 #include <cmath>
 #include <cstring>
-#include <iostream>
-#include <string>
 #include <fstream>
+#include <iostream>
+#include <kodi/General.h>
 #include <sstream>
+#include <string>
 #include <sys/stat.h>
 
 CVisualizationFishBMC::CVisualizationFishBMC()
@@ -25,7 +25,7 @@ CVisualizationFishBMC::CVisualizationFishBMC()
   m_fische->on_beat = &on_beat;
   m_fische->pixel_format = FISCHE_PIXELFORMAT_0xAABBGGRR;
   m_fische->line_style = FISCHE_LINESTYLE_THICK;
-  m_aspect = double (Width()) / double (Height());
+  m_aspect = double(Width()) / double(Height());
   m_texleft = (2 - m_aspect) / 4;
   m_texright = 1 - m_texleft;
   m_filemode = kodi::addon::GetSettingBoolean("filemode");
@@ -55,11 +55,14 @@ CVisualizationFishBMC::CVisualizationFishBMC()
 
 CVisualizationFishBMC::~CVisualizationFishBMC()
 {
-  fische_free (m_fische);
+  fische_free(m_fische);
   m_fische = nullptr;
 }
 
-bool CVisualizationFishBMC::Start(int channels, int samplesPerSec, int bitsPerSample, std::string songName)
+bool CVisualizationFishBMC::Start(int channels,
+                                  int samplesPerSec,
+                                  int bitsPerSample,
+                                  std::string songName)
 {
   m_errorstate = false;
 
@@ -78,7 +81,7 @@ bool CVisualizationFishBMC::Start(int channels, int samplesPerSec, int bitsPerSa
     delete_vectors();
   }
 
-  if (fische_start (m_fische) != 0)
+  if (fische_start(m_fische) != 0)
   {
     std::cerr << "fische failed to start" << std::endl;
     m_errorstate = true;
@@ -89,8 +92,10 @@ bool CVisualizationFishBMC::Start(int channels, int samplesPerSec, int bitsPerSa
 
   if (!m_shaderLoaded)
   {
-    std::string fraqShader = kodi::addon::GetAddonPath("resources/shaders/" GL_TYPE_STRING "/frag.glsl");
-    std::string vertShader = kodi::addon::GetAddonPath("resources/shaders/" GL_TYPE_STRING "/vert.glsl");
+    std::string fraqShader =
+        kodi::addon::GetAddonPath("resources/shaders/" GL_TYPE_STRING "/frag.glsl");
+    std::string vertShader =
+        kodi::addon::GetAddonPath("resources/shaders/" GL_TYPE_STRING "/vert.glsl");
     if (!LoadShaderFiles(vertShader, fraqShader) || !CompileAndLink())
       return false;
 
@@ -107,7 +112,8 @@ bool CVisualizationFishBMC::Start(int channels, int samplesPerSec, int bitsPerSa
   glBindTexture(GL_TEXTURE_2D, m_texture);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_fische->width, m_fische->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_fische->width, m_fische->height, 0, GL_RGBA,
+               GL_UNSIGNED_BYTE, pixels);
 
   m_isrotating = false;
   m_angle = 0;
@@ -135,7 +141,7 @@ void CVisualizationFishBMC::Stop()
   m_indexVBO = 0;
 #endif
 
-  delete [] m_axis;
+  delete[] m_axis;
   m_axis = nullptr;
 }
 
@@ -155,11 +161,12 @@ void CVisualizationFishBMC::Render()
     return;
 
   // check if this frame is to be skipped
-  if (++ frame % m_framedivisor == 0)
+  if (++frame % m_framedivisor == 0)
   {
     uint32_t* pixels = fische_render(m_fische);
     glBindTexture(GL_TEXTURE_2D, m_texture);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_fische->width, m_fische->height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_fische->width, m_fische->height, GL_RGBA,
+                    GL_UNSIGNED_BYTE, pixels);
     if (m_isrotating)
       m_angle += m_angleincrement;
   }
@@ -183,7 +190,7 @@ void CVisualizationFishBMC::Render()
   if (!m_axis)
   {
     m_axis = new uint8_t[n_X * n_Y];
-    for (int i = 0; i < n_X * n_Y; ++ i)
+    for (int i = 0; i < n_X * n_Y; ++i)
     {
       m_axis[i] = rand() % 2;
     }
@@ -213,26 +220,19 @@ void CVisualizationFishBMC::Render()
       if (angle > 360)
         angle = 360;
 
-      textured_quad(center_x,
-                    center_y,
-                    angle,
-                    m_axis[quad_count ++],
-                    quad_width,
-                    quad_height,
-                    tex_left,
-                    tex_right,
-                    tex_top,
-                    tex_bottom);
+      textured_quad(center_x, center_y, angle, m_axis[quad_count++], quad_width, quad_height,
+                    tex_left, tex_right, tex_top, tex_bottom);
     }
   }
 
   finish_render();
 }
 
-ADDON_STATUS CVisualizationFishBMC::SetSetting(const std::string& settingName, const kodi::addon::CSettingValue& settingValue)
+ADDON_STATUS CVisualizationFishBMC::SetSetting(const std::string& settingName,
+                                               const kodi::addon::CSettingValue& settingValue)
 {
   if (settingName.empty() || settingValue.empty())
-      return ADDON_STATUS_UNKNOWN;
+    return ADDON_STATUS_UNKNOWN;
 
   if (settingName == "nervous")
     m_fische->nervous_mode = settingValue.GetBoolean() ? 1 : 0;
@@ -289,7 +289,7 @@ void CVisualizationFishBMC::textured_quad(float center_x,
                                           float tex_top,
                                           float tex_bottom)
 {
-  float scale = 1 - sin (angle / 360 * M_PI) / 3;
+  float scale = 1 - sin(angle / 360 * M_PI) / 3;
 
   glm::mat4 modelMatrixOld = m_modelMatrix;
   m_modelMatrix = glm::translate(m_modelMatrix, glm::vec3(center_x, center_y, 0));
@@ -297,24 +297,24 @@ void CVisualizationFishBMC::textured_quad(float center_x,
   m_modelMatrix = glm::scale(m_modelMatrix, glm::vec3(scale, scale, scale));
 
   m_coord[0] = sCoord(tex_left, tex_top);
-  m_vertex[0] = sPosition(- width / 2, - height / 2, 0);
+  m_vertex[0] = sPosition(-width / 2, -height / 2, 0);
 
   m_coord[1] = sCoord(tex_right, tex_top);
-  m_vertex[1] = sPosition(width / 2, - height / 2, 0);
+  m_vertex[1] = sPosition(width / 2, -height / 2, 0);
 
   m_coord[2] = sCoord(tex_right, tex_bottom);
   m_vertex[2] = sPosition(width / 2, height / 2, 0);
 
   m_coord[3] = sCoord(tex_left, tex_bottom);
-  m_vertex[3] = sPosition(- width / 2, height / 2, 0);
+  m_vertex[3] = sPosition(-width / 2, height / 2, 0);
 
   EnableShader();
 #ifdef HAS_GL
   glBindBuffer(GL_ARRAY_BUFFER, m_vertexVBO[0]);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(sPosition)*4, m_vertex, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(sPosition) * 4, m_vertex, GL_STATIC_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, m_vertexVBO[1]);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(sCoord)*4, m_coord, GL_STATIC_DRAW);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint)*4, m_indexer, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(sCoord) * 4, m_coord, GL_STATIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * 4, m_indexer, GL_STATIC_DRAW);
   glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_INT, 0);
 #else
   glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_INT, m_indexer);
@@ -360,7 +360,8 @@ void CVisualizationFishBMC::start_render()
   // bind global texture
   glBindTexture(GL_TEXTURE_2D, m_texture);
 
-  m_modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -6.0f)); // move 6 units into the screen
+  m_modelMatrix =
+      glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -6.0f)); // move 6 units into the screen
   m_modelMatrix = glm::rotate(m_modelMatrix, m_angle, glm::vec3(0.0f, 1.0f, 0.0f)); // rotate
 }
 
