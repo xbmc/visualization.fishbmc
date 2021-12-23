@@ -31,7 +31,7 @@ struct sCoord
   float s,t;
 };
 
-class ATTRIBUTE_HIDDEN CVisualizationFishBMC
+class ATTR_DLL_LOCAL CVisualizationFishBMC
   : public kodi::addon::CAddonBase,
     public kodi::addon::CInstanceVisualization,
     public kodi::gui::gl::CShaderProgram
@@ -40,12 +40,11 @@ public:
   CVisualizationFishBMC();
   ~CVisualizationFishBMC() override;
 
-  ADDON_STATUS GetStatus() override;
   bool Start(int channels, int samplesPerSec, int bitsPerSample, std::string songName) override;
   void Stop() override;
   void Render() override;
   void AudioData(const float* audioData, int audioDataLength, float *freqData, int freqDataLength) override;
-  ADDON_STATUS SetSetting(const std::string& settingName, const kodi::CSettingValue& settingValue) override;
+  ADDON_STATUS SetSetting(const std::string& settingName, const kodi::addon::CSettingValue& settingValue) override;
 
   void OnCompiledAndLinked() override;
   bool OnEnabled() override;

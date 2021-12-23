@@ -28,18 +28,18 @@ CVisualizationFishBMC::CVisualizationFishBMC()
   m_aspect = double (Width()) / double (Height());
   m_texleft = (2 - m_aspect) / 4;
   m_texright = 1 - m_texleft;
-  m_filemode = kodi::GetSettingBoolean("filemode");
-  m_fische->nervous_mode = kodi::GetSettingBoolean("nervous") ? 1 : 0;
+  m_filemode = kodi::addon::GetSettingBoolean("filemode");
+  m_fische->nervous_mode = kodi::addon::GetSettingBoolean("nervous") ? 1 : 0;
   m_fische->handler = this;
 
-  int detail = kodi::GetSettingInt("detail");
+  int detail = kodi::addon::GetSettingInt("detail");
   m_size = 128;
   while (detail--)
   {
     m_size *= 2;
   }
 
-  int divisor = kodi::GetSettingInt("divisor");
+  int divisor = kodi::addon::GetSettingInt("divisor");
   m_framedivisor = 8;
   while (divisor--)
   {
@@ -89,8 +89,8 @@ bool CVisualizationFishBMC::Start(int channels, int samplesPerSec, int bitsPerSa
 
   if (!m_shaderLoaded)
   {
-    std::string fraqShader = kodi::GetAddonPath("resources/shaders/" GL_TYPE_STRING "/frag.glsl");
-    std::string vertShader = kodi::GetAddonPath("resources/shaders/" GL_TYPE_STRING "/vert.glsl");
+    std::string fraqShader = kodi::addon::GetAddonPath("resources/shaders/" GL_TYPE_STRING "/frag.glsl");
+    std::string vertShader = kodi::addon::GetAddonPath("resources/shaders/" GL_TYPE_STRING "/vert.glsl");
     if (!LoadShaderFiles(vertShader, fraqShader) || !CompileAndLink())
       return false;
 
@@ -137,14 +137,6 @@ void CVisualizationFishBMC::Stop()
 
   delete [] m_axis;
   m_axis = nullptr;
-}
-
-ADDON_STATUS CVisualizationFishBMC::GetStatus()
-{
-  if (m_errorstate)
-    return ADDON_STATUS_UNKNOWN;
-
-  return ADDON_STATUS_OK;
 }
 
 void CVisualizationFishBMC::AudioData(const float* pAudioData, int iAudioDataLength, float*, int)
@@ -237,7 +229,7 @@ void CVisualizationFishBMC::Render()
   finish_render();
 }
 
-ADDON_STATUS CVisualizationFishBMC::SetSetting(const std::string& settingName, const kodi::CSettingValue& settingValue)
+ADDON_STATUS CVisualizationFishBMC::SetSetting(const std::string& settingName, const kodi::addon::CSettingValue& settingValue)
 {
   if (settingName.empty() || settingValue.empty())
       return ADDON_STATUS_UNKNOWN;
@@ -401,7 +393,7 @@ void CVisualizationFishBMC::write_vectors(void* handler, const void* data, size_
 
   CVisualizationFishBMC* thisClass = static_cast<CVisualizationFishBMC*>(handler);
 
-  std::string dirname = kodi::GetBaseUserPath("data");
+  std::string dirname = kodi::addon::GetUserPath("data");
   kodi::vfs::CreateDirectory(dirname);
 
   std::ostringstream filename;
@@ -424,7 +416,7 @@ size_t CVisualizationFishBMC::read_vectors(void* handler, void** data)
 
   CVisualizationFishBMC* thisClass = static_cast<CVisualizationFishBMC*>(handler);
 
-  std::string dirname = kodi::GetBaseUserPath("data");
+  std::string dirname = kodi::addon::GetUserPath("data");
   kodi::vfs::CreateDirectory(dirname);
 
   std::ostringstream filename;
@@ -448,7 +440,7 @@ size_t CVisualizationFishBMC::read_vectors(void* handler, void** data)
 
 void CVisualizationFishBMC::delete_vectors()
 {
-  std::string dirname = kodi::GetBaseUserPath("data");
+  std::string dirname = kodi::addon::GetUserPath("data");
   kodi::vfs::CreateDirectory(dirname);
 
   for (int i = 64; i <= 2048; i *= 2)
