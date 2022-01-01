@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon
   id="visualization.fishbmc"
-  version="20.0.0"
+  version="20.1.0"
   name="FishBMC"
   provider-name="26elf">
   <requires>@ADDON_DEPENDS@</requires>
@@ -95,7 +95,7 @@
     <disclaimer lang="en_NZ">If this breaks anything, the pieces remain yours.</disclaimer>
     <disclaimer lang="es_ES">Si esto rompe alguna cosa, te puedes quedar con los trozos.</disclaimer>
     <disclaimer lang="es_MX">Si esto rompe algo, las piezas siguen siento tuyas.</disclaimer>
-    <disclaimer lang="et_EE">kui see midagi lõhub, siis võid tükid endale jätta</disclaimer>
+    <disclaimer lang="et_EE">kui see midagi lõhub, siis võid tükid endale jätta.</disclaimer>
     <disclaimer lang="fr_CA">Si ça brise, vous gardez les morceaux.</disclaimer>
     <disclaimer lang="fr_FR">Si cela casse quelque chose, les pièces restent les vôtres.</disclaimer>
     <disclaimer lang="gl_ES">Se isto estraga algunha cousa, pode quedar cas pezas.</disclaimer>
