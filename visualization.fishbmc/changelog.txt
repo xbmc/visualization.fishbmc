@@ -1,3 +1,6 @@
+19.0.1 (2021-12-23)
+- Translation updates by Weblate
+
 19.0.0 (2021-09-13)
 - Updated language files from Weblate
 - Update description text on strings.po (en_GB)
