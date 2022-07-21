@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: XBMC Main\n"
 "Report-Msgid-Bugs-To: translations@kodi.tv\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"PO-Revision-Date: 2022-06-30 10:14+0000\n"
+"PO-Revision-Date: 2022-07-21 09:14+0000\n"
 "Last-Translator: Oskari Lavinto <olavinto@protonmail.com>\n"
 "Language-Team: Finnish <https://kodi.weblate.cloud/projects/kodi-add-ons-look-and-feel/visualization-fishbmc/fi_fi/>\n"
 "Language: fi_fi\n"
@@ -23,20 +23,20 @@ msgstr "Aalto- ja sumennustehosteita näyttävä visualisointi"
 
 msgctxt "Addon Description"
 msgid "fishBMC is based on fische, a standalone sound visualisation tool. The basic principle is: draw the waveform and smear the drawing along predefined vectors. However fische also incorporates advanced beat detection, which really guarantees a great visual experience."
-msgstr ""
+msgstr "fishBMC perustuu erilliseen fische-nimiseen äänen visualisointityökaluun. Sen perusperiaate on: Piirrä aaltomuoto ja levitä piirros ennalta määritettyjä vektoreita pitkin. Lisäksi fische sisältää kuitenkin myös edistyneen tahdintunnistuksen, joka todella takaa upean visuaalisen kokemuksen."
 
 msgctxt "Addon Disclaimer"
 msgid "If this breaks anything, the pieces remain yours."
-msgstr ""
+msgstr "Jos tämä särkee jotakin, jäävät sirpaleet sinulle."
 
 # settings labels
 msgctxt "#30000"
 msgid "Detail [CPU intensive]"
-msgstr ""
+msgstr "Yksityiskohtaisuus (prosessoria kuormittava)"
 
 msgctxt "#30001"
 msgid "Low"
-msgstr "Matala"
+msgstr "Alhainen"
 
 msgctxt "#30002"
 msgid "Normal"
@@ -52,19 +52,19 @@ msgstr "Erittäin korkea"
 
 msgctxt "#30005"
 msgid "Nervous Mode [more mode changes]"
-msgstr ""
+msgstr "Hermostunut tila (enemmän tilanvaihtoja)"
 
 msgctxt "#30006"
 msgid "Speed [skip some frames]"
-msgstr ""
+msgstr "Nopeus (ohittaa joitakin kuvia)"
 
 msgctxt "#30007"
 msgid "Very Low"
-msgstr "Erittäin matala"
+msgstr "Erittäin hidas"
 
 msgctxt "#30008"
 msgid "Low"
-msgstr "Matala"
+msgstr "Hidas"
 
 msgctxt "#30009"
 msgid "Normal"
@@ -72,8 +72,8 @@ msgstr "Normaali"
 
 msgctxt "#30010"
 msgid "High"
-msgstr "Korkea"
+msgstr "Nopea"
 
 msgctxt "#30011"
 msgid "Use a Persistence File [faster startup]"
-msgstr ""
+msgstr "Käytä pysyvää tiedostoa (nopeampi käynnistys)"
