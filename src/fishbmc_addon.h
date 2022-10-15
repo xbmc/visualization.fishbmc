@@ -39,13 +39,13 @@ public:
   CVisualizationFishBMC();
   ~CVisualizationFishBMC() override;
 
-  bool Start(int channels, int samplesPerSec, int bitsPerSample, std::string songName) override;
+  bool Start(int channels, int samplesPerSec, int bitsPerSample, const std::string& songName) override;
   void Stop() override;
   void Render() override;
-  void AudioData(const float* audioData,
+  void AudioData(const float* audioData, size_t audioDataLength) override;
                  int audioDataLength,
                  float* freqData,
-                 int freqDataLength) override;
+                 int freqDataLength);
   ADDON_STATUS SetSetting(const std::string& settingName,
                           const kodi::addon::CSettingValue& settingValue) override;
 
