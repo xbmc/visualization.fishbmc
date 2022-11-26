@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2005-2021 Team Kodi (https://kodi.tv)
+ *  Copyright (C) 2005-2022 Team Kodi (https://kodi.tv)
  *  Copyright (C) 2012 Marcel Ebmer
  *
  *  SPDX-License-Identifier: GPL-2.0-or-later
@@ -62,7 +62,7 @@ CVisualizationFishBMC::~CVisualizationFishBMC()
 bool CVisualizationFishBMC::Start(int channels,
                                   int samplesPerSec,
                                   int bitsPerSample,
-                                  std::string songName)
+                                  const std::string& songName)
 {
   m_errorstate = false;
 
@@ -145,7 +145,7 @@ void CVisualizationFishBMC::Stop()
   m_axis = nullptr;
 }
 
-void CVisualizationFishBMC::AudioData(const float* pAudioData, int iAudioDataLength, float*, int)
+void CVisualizationFishBMC::AudioData(const float* pAudioData, size_t iAudioDataLength)
 {
   if (!m_startOK)
     return;

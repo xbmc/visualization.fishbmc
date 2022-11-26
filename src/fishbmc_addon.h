@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2005-2021 Team Kodi (https://kodi.tv)
+ *  Copyright (C) 2005-2022 Team Kodi (https://kodi.tv)
  *  Copyright (C) 2012 Marcel Ebmer
  *
  *  SPDX-License-Identifier: GPL-2.0-or-later
@@ -39,13 +39,13 @@ public:
   CVisualizationFishBMC();
   ~CVisualizationFishBMC() override;
 
-  bool Start(int channels, int samplesPerSec, int bitsPerSample, std::string songName) override;
+  bool Start(int channels,
+             int samplesPerSec,
+             int bitsPerSample,
+             const std::string& songName) override;
   void Stop() override;
   void Render() override;
-  void AudioData(const float* audioData,
-                 int audioDataLength,
-                 float* freqData,
-                 int freqDataLength) override;
+  void AudioData(const float* audioData, size_t audioDataLength) override;
   ADDON_STATUS SetSetting(const std::string& settingName,
                           const kodi::addon::CSettingValue& settingValue) override;
 
