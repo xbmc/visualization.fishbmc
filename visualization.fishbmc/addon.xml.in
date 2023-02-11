@@ -25,7 +25,7 @@
     <summary lang="ca_ES">Visualització que mostra Ones i Efectes de desenfocament</summary>
     <summary lang="cs_CZ">Vizualizace zobrazující vlny a rozmazané efekty</summary>
     <summary lang="da_DK">Visualisering der viser bølger og sløringseffekter</summary>
-    <summary lang="de_DE">Visualisierung mit Wellen- und Weichzeichnungs-Effekten</summary>
+    <summary lang="de_DE">Visualisierung mit Wellen- und Weichzeichnungseffekten</summary>
     <summary lang="el_GR">Οπτικοποίηση προβολής Κυμάτων και Εφέ Θαμπώματος</summary>
     <summary lang="en_AU">Visualisation showing Waves and Blur Effects</summary>
     <summary lang="en_GB">Visualisation showing Waves and Blur Effects</summary>
@@ -35,7 +35,7 @@
     <summary lang="et_EE">Laine- ja uduefektidega visuaal</summary>
     <summary lang="fi_FI">Aalto- ja sumennustehosteita näyttävä visualisointi</summary>
     <summary lang="fr_CA">Visualisation à effet de vague et flou</summary>
-    <summary lang="fr_FR">Visualisation montrant des vagues et des effets de flou</summary>
+    <summary lang="fr_FR">Visualisation montrant des vagues et des effets floutés</summary>
     <summary lang="gl_ES">Unha visualización con Ondas e efectos de Desenfoque</summary>
     <summary lang="he_IL">חיזוי מציג אפקטי גלים וטשטוש</summary>
     <summary lang="hr_HR">Vizualizacija prikazuje valove i zamućene efekte</summary>
@@ -58,7 +58,7 @@
     <description lang="bg_BG">fishBMC е създадена въз основа на fische - самостоятелен инструмент за визуализиране на звук. Основния принцип е изчертаване на вълнова функция и размиване по предварително определени вектори. В допълнение fische съдържа и разширена функция за засичане на ритъма, което би трябвало да гарантира великолепно визуално изживяване.</description>
     <description lang="ca_ES">fishBMC es basa en fische, una eina de visualització de so autònoma. El principi bàsic és: dibuixar la forma d&apos;ona i estendre el dibuix al llarg de vectors per defecte. No obstant, fische també incorpora una detecció avançada del ritme, que realment garanteix una gran experiència visual.</description>
     <description lang="da_DK">fishBMX er baseret på fische, et enkeltstående lydvisualiseringsværktøj. Grundprincippet er: tegn waveformen og tvær tegningen langs de prædefinerede vektorer. Imidlertid inkluderer fische også avanceret beat-registrering, hvilket virkelig garanterer en fantastisk visuel oplevelse.</description>
-    <description lang="de_DE">fishBMC basiert auf fische, einem eigenständigen Ton-Visualisierungsprogramm. Das Grundprinzip ist: Zeichne das Wellenspektrum und verwische die Zeichnung entlang festgelegter Vektoren. fische verfügt jedoch auch über eine fortgeschrittene Rhytmus-Erkennung, die ein großartiges visuelles Erlebnis garantiert.</description>
+    <description lang="de_DE">fishBMC basiert auf fische, einem eigenständigen Ton-Visualisierungsprogramm. Das Grundprinzip ist: das Wellenspektrum zeichnen und die Zeichnung entlang festgelegter Vektoren verwischen. fische verfügt jedoch auch über eine fortgeschrittene Rhythmus-Erkennung, die ein tolles Erlebnis garantiert.</description>
     <description lang="el_GR">Το fishBMC είναι βασισμένο στο fische, ένα ξεχωριστό εργαλείο ηχητικών οπτικοποιήσεων. Η βασική του αρχή είναι: σχεδίαση μιας κυματομορφής και χρωματισμός της εικόνας κατά μήκος προκαθορισμένων διανυσμάτων. Παρ&apos;όλα αυτά, το fische περιλαμβάνει και ανεπτυγμένες μεθόδους εντοπισμού παλμών, γεγονός που εγγυάται μια εκπληκτική οπτική εμπειρία.</description>
     <description lang="en_AU">fishBMC is based on fische, a standalone sound visualisation tool. The basic principle is: draw the waveform and smear the drawing along predefined vectors. However fische also incorporates advanced beat detection, which really guarantees a great visual experience.</description>
     <description lang="en_GB">fishBMC is based on fische, a standalone sound visualisation tool. The basic principle is: draw the waveform and smear the drawing along predefined vectors. However fische also incorporates advanced beat detection, which really guarantees a great visual experience.</description>
