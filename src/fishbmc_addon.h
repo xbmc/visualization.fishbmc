@@ -85,6 +85,7 @@ private:
   GLint m_aVertexLoc = -1;
   GLint m_aCoordLoc = -1;
 
+  GLuint m_vao = 0;
   GLuint m_vertexVBO[2] = {0};
   GLuint m_indexVBO = 0;
   GLuint m_texture = 0;

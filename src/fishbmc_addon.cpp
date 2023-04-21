@@ -102,6 +102,8 @@ bool CVisualizationFishBMC::Start(int channels,
     m_shaderLoaded = true;
   }
 
+  glGenVertexArrays(1, &m_vao);
+
 #ifdef HAS_GL
   glGenBuffers(2, m_vertexVBO);
   glGenBuffers(1, &m_indexVBO);
@@ -131,15 +133,15 @@ void CVisualizationFishBMC::Stop()
   glDeleteTextures(1, &m_texture);
 
 #ifdef HAS_GL
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
   glDeleteBuffers(2, m_vertexVBO);
   m_vertexVBO[0] = 0;
   m_vertexVBO[1] = 0;
 
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   glDeleteBuffers(1, &m_indexVBO);
   m_indexVBO = 0;
 #endif
+
+  glDeleteVertexArrays(1, &m_vao);
 
   delete[] m_axis;
   m_axis = nullptr;
@@ -196,6 +198,8 @@ void CVisualizationFishBMC::Render()
     }
   }
 
+  glBindVertexArray(m_vao);
+
   start_render();
 
   // loop over and draw all quads
@@ -226,6 +230,8 @@ void CVisualizationFishBMC::Render()
   }
 
   finish_render();
+
+  glBindVertexArray(0);
 }
 
 ADDON_STATUS CVisualizationFishBMC::SetSetting(const std::string& settingName,
