@@ -140,9 +140,6 @@ void CVisualizationFishBMC::Stop()
   glDeleteBuffers(1, &m_indexVBO);
   m_indexVBO = 0;
 #endif
-
-  delete[] m_axis;
-  m_axis = nullptr;
 }
 
 void CVisualizationFishBMC::AudioData(const float* pAudioData, size_t iAudioDataLength)
@@ -187,9 +184,9 @@ void CVisualizationFishBMC::Render()
   int n_X = (m_aspect * 8 + 0.5);
 
   // one-time initialization of rotation axis array
-  if (!m_axis)
+  if (m_axis.empty())
   {
-    m_axis = new uint8_t[n_X * n_Y];
+    m_axis.resize(n_X * n_Y);
     for (int i = 0; i < n_X * n_Y; ++i)
     {
       m_axis[i] = rand() % 2;
