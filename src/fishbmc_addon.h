@@ -101,5 +101,5 @@ private:
   float m_texleft;
   bool m_filemode;
   int m_size;
-  uint8_t* m_axis = nullptr;
+  std::vector<uint8_t> m_axis;
 };
