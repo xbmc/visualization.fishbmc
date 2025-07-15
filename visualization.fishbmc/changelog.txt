@@ -1,3 +1,6 @@
+v22.0.1 (2025-07-15):
+- Increase version to 22.0.1 for Kodi 22 Piers
+
 v20.2.0 (2022-09-09):
 - Kodi visualization API update to version 4.0.0
 
