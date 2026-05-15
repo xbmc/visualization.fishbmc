@@ -136,4 +136,29 @@ typedef struct FISCHE
   const char* error_text;
 } FISCHE;
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+  /* creates a new FISCHE object
+   * and initialzes it with default values */
+  FISCHE* fische_new();
+
+  /* destructs the FISCHE object */
+  void fische_free(FISCHE* handle);
+
+  /* starts FISCHE */
+  int fische_start(FISCHE* handle);
+
+  /* makes the next frame available */
+  uint32_t* fische_render(FISCHE* handle);
+
+  /* inserts audio data */
+  void fische_audiodata(FISCHE* handle, const void* data, size_t data_size);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif
