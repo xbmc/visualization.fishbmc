@@ -6,8 +6,7 @@
  *  See LICENSE.md for more information.
  */
 
-#include "fische_internal.h"
-
+#include <stdint.h>
 #include <string.h>
 
 #if defined(__x86_64__)

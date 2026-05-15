@@ -27,7 +27,7 @@ set(FISH_SOURCES src/fishbmc_addon.cpp
                  src/fische/analyst.cpp
                  src/fische/audiobuffer.cpp
                  src/fische/blurengine.cpp
-                 src/fische/cpudetect.cpp
+                 src/fische/cpudetect.c
                  src/fische/fische.cpp
                  src/fische/screenbuffer.cpp
                  src/fische/vector.cpp
@@ -38,6 +38,7 @@ set(FISH_HEADERS src/fishbmc_addon.h
                  src/fische/analyst.h
                  src/fische/audiobuffer.h
                  src/fische/blurengine.h
+                 src/fische/cpudetect.h
                  src/fische/fische.h
                  src/fische/fische_internal.h
                  src/fische/screenbuffer.h

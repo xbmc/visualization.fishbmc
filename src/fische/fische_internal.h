@@ -27,9 +27,6 @@
 
 #define FISCHE_PRIVATE(P) ((struct _fische__internal_*)P->fische->priv)
 
-uint_fast8_t _fische__cpu_detect_();
-
-
 struct _fische__internal_
 {
   struct fische__screenbuffer* screenbuffer;

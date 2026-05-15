@@ -6,6 +6,7 @@
  *  See LICENSE.md for more information.
  */
 
+#include "cpudetect.h"
 #include "fische_internal.h"
 
 #include <chrono>
