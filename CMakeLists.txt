@@ -40,10 +40,10 @@ set(FISH_HEADERS src/fishbmc_addon.h
                  src/fische/blurengine.hpp
                  src/fische/cpudetect.h
                  src/fische/fische.h
-                 src/fische/fische_internal.h
+                 src/fische/fische.hpp
                  src/fische/screenbuffer.hpp
-                 src/fische/vectorfield.hpp
                  src/fische/vector.hpp
+                 src/fische/vectorfield.hpp
                  src/fische/wavepainter.hpp)
 
 build_addon(visualization.fishbmc FISH DEPLIBS)

@@ -8,41 +8,42 @@
 
 #pragma once
 
-#include <stdint.h>
+#include <cstddef>
+#include <cstdint>
 
-struct fische;
-struct _fische__wavepainter_;
-struct fische__wavepainter;
-
-
-struct fische__wavepainter* fische__wavepainter_new(struct fische* parent);
-void fische__wavepainter_free(struct fische__wavepainter* self);
-
-void fische__wavepainter_paint(struct fische__wavepainter* self, double* data, uint_fast16_t size);
-void fische__wavepainter_beat(struct fische__wavepainter* self, double bpm);
-void fische__wavepainter_change_color(struct fische__wavepainter* self, double bpm, double energy);
-void fische__wavepainter_change_shape(struct fische__wavepainter* self);
-
-
-struct _fische__wavepainter_
+namespace fische
 {
-  uint_fast16_t width;
-  uint_fast16_t height;
-  uint_fast16_t center_x;
-  uint_fast16_t center_y;
-  int_fast8_t direction;
-  uint_fast8_t shape;
-  uint_fast8_t n_shapes;
-  uint32_t color_1;
-  uint32_t color_2;
-  double angle;
-  uint_fast8_t is_rotating;
-  double rotation_increment;
 
-  struct fische* fische;
+class CFische;
+class CScreenBuffer;
+
+class CWavePainter
+{
+public:
+  CWavePainter(const CFische* parent);
+  ~CWavePainter() = default;
+
+  void Paint(const double* data, size_t size);
+  void Beat(double bpm);
+  void ChangeColor(double bpm, double energy);
+  void ChangeShape();
+
+private:
+  const CFische* m_fische;
+  const uint_fast16_t m_width;
+  const uint_fast16_t m_height;
+  const uint_fast16_t m_center_x;
+  const uint_fast16_t m_center_y;
+  CScreenBuffer* m_sbuf;
+
+  uint32_t m_color_1;
+  uint32_t m_color_2;
+  int_fast8_t m_direction{1};
+  uint_fast8_t m_shape{0};
+  uint_fast8_t m_n_shapes{2};
+  double m_angle{0.0};
+  bool m_is_rotating{false};
+  double m_rotation_increment{0.0};
 };
 
-struct fische__wavepainter
-{
-  struct _fische__wavepainter_* priv;
-};
+} // namespace fische

@@ -8,43 +8,45 @@
 
 #pragma once
 
-#include <stdint.h>
+#include <atomic>
+#include <cstdint>
 
-struct fische;
-struct _fische__screenbuffer;
-struct fische__screenbuffer;
-
-
-struct fische__screenbuffer* fische__screenbuffer_new(struct fische* parent);
-void fische__screenbuffer_free(struct fische__screenbuffer* self);
-
-void fische__screenbuffer_lock(struct fische__screenbuffer* self);
-void fische__screenbuffer_unlock(struct fische__screenbuffer* self);
-
-void fische__screenbuffer_line(struct fische__screenbuffer* self,
-                               int_fast16_t x1,
-                               int_fast16_t y1,
-                               int_fast16_t x2,
-                               int_fast16_t y2,
-                               uint32_t color);
-
-
-struct _fische__screenbuffer_
+namespace fische
 {
-  uint_fast8_t is_locked;
-  int_fast16_t width;
-  int_fast16_t height;
-  uint_fast8_t red_shift;
-  uint_fast8_t blue_shift;
-  uint_fast8_t green_shift;
-  uint_fast8_t alpha_shift;
 
-  struct fische* fische;
+class CFische;
+
+class CScreenBuffer
+{
+public:
+  CScreenBuffer(const CFische* parent);
+  ~CScreenBuffer();
+
+  void Lock();
+  void Unlock();
+
+  void Line(double x1, double y1, double x2, double y2, uint32_t color);
+
+  inline uint32_t* Pixels() { return m_pixels; }
+  inline void SetPixels(uint32_t* pixels) { m_pixels = pixels; }
+  inline int_fast16_t Width() const { return m_width; }
+  inline int_fast16_t Height() const { return m_height; }
+  inline uint_fast8_t RedShift() const { return m_red_shift; }
+  inline uint_fast8_t BlueShift() const { return m_blue_shift; }
+  inline uint_fast8_t GreenShift() const { return m_green_shift; }
+  inline uint_fast8_t AlphaShift() const { return m_alpha_shift; }
+
+private:
+  const CFische* m_fische;
+  const int_fast16_t m_width;
+  const int_fast16_t m_height;
+
+  std::atomic<bool> m_is_locked{false};
+  uint32_t* m_pixels;
+  uint_fast8_t m_red_shift;
+  uint_fast8_t m_blue_shift;
+  uint_fast8_t m_green_shift;
+  uint_fast8_t m_alpha_shift;
 };
 
-struct fische__screenbuffer
-{
-  uint32_t* pixels;
-
-  struct _fische__screenbuffer_* priv;
-};
+} // namespace fische

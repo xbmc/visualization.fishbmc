@@ -8,41 +8,50 @@
 
 #pragma once
 
-#include <stdint.h>
+#include "vector.hpp"
 
-struct fische;
-struct _fische__vectorfield_;
-struct fische__vectorfield;
+#include <cstddef>
+#include <cstdint>
 
-
-struct fische__vectorfield* fische__vectorfield_new(struct fische* parent,
-                                                    double* progress,
-                                                    uint_fast8_t* cancel);
-void fische__vectorfield_free(struct fische__vectorfield* self);
-
-void fische__vectorfield_change(struct fische__vectorfield* self);
-
-
-struct _fische__vectorfield_
+namespace fische
 {
-  uint16_t* fields;
-  uint_fast32_t fieldsize;
-  uint_fast16_t width;
-  uint_fast16_t height;
-  uint_fast16_t dimension;
-  uint_fast16_t center_x;
-  uint_fast16_t center_y;
-  uint_fast8_t threads;
-  uint_fast8_t n_fields;
-  uint_fast8_t cancelled;
 
-  struct fische* fische;
+class CFische;
+
+class CVectorField
+{
+public:
+  CVectorField(CFische* parent, double& progress, bool& cancel);
+  ~CVectorField();
+
+  void Change();
+  inline const uint16_t* Field() const { return m_field; };
+
+private:
+  inline void Randomize(fische::vector* vec);
+  inline void Validate(fische::vector* vec, double x, double y);
+  void FillField(uint_fast8_t fieldno);
+  void FillThread(uint16_t* field,
+                  uint_fast8_t fieldno,
+                  uint_fast16_t start_y,
+                  uint_fast16_t end_y);
+
+  uint16_t* m_field{nullptr};
+
+  CFische* const m_fische;
+  const uint_fast16_t m_width;
+  const uint_fast16_t m_height;
+  const uint_fast16_t m_center_x;
+  const uint_fast16_t m_center_y;
+  const uint_fast16_t m_dimension;
+  const uint_fast8_t m_threads;
+  const size_t m_fieldsize;
+
+  uint16_t* m_fields{nullptr};
+  size_t m_n_fields;
+  bool m_cancelled{false};
+
+  static uint32_t m_rand_seed;
 };
 
-
-struct fische__vectorfield
-{
-  uint16_t* field;
-
-  struct _fische__vectorfield_* priv;
-};
+} // namespace fische

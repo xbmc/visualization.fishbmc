@@ -6,62 +6,126 @@
  *  See LICENSE.md for more information.
  */
 
-#include "fische_internal.h"
+#include "blurengine.hpp"
+
+#include "fische.hpp"
+#include "screenbuffer.hpp"
 
 #include <chrono>
-#include <thread>
 
-#ifdef DEBUG
-#include <stdio.h>
-#endif
-
-void blur_worker(struct _fische__blurworker_* params)
+namespace fische
 {
-  uint_fast16_t const width = params->width;
-  uint_fast16_t const width_x2 = 2 * width;
-  uint_fast16_t const y_start = params->y_start;
-  uint_fast16_t const y_end = params->y_end;
+
+CBlurEngine::CBlurEngine(const CFische* parent)
+  : m_fische(parent),
+    m_width(parent->GetWidth()),
+    m_height(parent->GetHeight()),
+    m_threads(parent->GetUsedCPUs())
+{
+  m_sourcebuffer = m_fische->GetScreenbuffer()->Pixels();
+  m_destinationbuffer = new uint32_t[m_width * m_height]();
+
+  for (uint_fast8_t i = 0; i < m_threads; ++i)
+  {
+    m_worker[i].vectors = nullptr;
+    m_worker[i].y_start = (i * m_height) / m_threads;
+    m_worker[i].y_end = ((i + 1) * m_height) / m_threads;
+    m_worker[i].kill = false;
+    m_worker[i].work = false;
+    m_worker[i].thread = new std::thread(&CBlurEngine::ThreadWorker, this, &m_worker[i]);
+  }
+}
+
+CBlurEngine::~CBlurEngine()
+{
+  for (uint_fast8_t i = 0; i < m_threads; ++i)
+  {
+    m_worker[i].kill = true;
+    m_worker[i].thread->join();
+    delete m_worker[i].thread;
+  }
+
+  delete[] m_destinationbuffer;
+}
+
+void CBlurEngine::Blur(const uint16_t* vectors)
+{
+  for (uint_fast8_t i = 0; i < m_threads; ++i)
+  {
+    m_worker[i].vectors = vectors;
+    m_worker[i].work = true;
+  }
+}
+
+void CBlurEngine::SwapBuffers()
+{
+  // wait for all workers to finish
+  bool work = true;
+
+  while (work)
+  {
+    work = false;
+    for (uint_fast8_t i = 0; i < m_threads; ++i)
+    {
+      work |= m_worker[i].work;
+    }
+
+    if (work)
+      std::this_thread::sleep_for(std::chrono::microseconds(1));
+  }
+
+  uint32_t* t = m_destinationbuffer;
+  m_destinationbuffer = m_sourcebuffer;
+  m_sourcebuffer = t;
+  m_fische->GetScreenbuffer()->SetPixels(t);
+}
+
+void CBlurEngine::ThreadWorker(_blurworker_* params)
+{
+  const uint32_t width_x2 = 2 * m_width;
+  const uint32_t y_start = params->y_start;
+  const uint32_t y_end = params->y_end;
 
   uint32_t source_component[4];
 
-  uint_fast16_t const two_lines = 2 * width;
-  uint_fast16_t const one_line = width;
-  uint_fast16_t const two_columns = 2;
+  const uint32_t two_lines = 2 * m_width;
+  const uint32_t one_line = m_width;
+  const uint32_t two_columns = 2;
 
-  uint_fast16_t x, y;
+  uint32_t x, y;
   int_fast8_t vector_x, vector_y;
 
   while (!params->kill)
   {
-
     if (!params->work)
     {
       std::this_thread::sleep_for(std::chrono::microseconds(1));
       continue;
     }
 
-    uint32_t* source = params->source;
+    uint32_t* source = m_sourcebuffer;
     uint32_t* source_pixel;
 
-    uint32_t* destination = params->destination;
-    uint32_t* destination_pixel = destination + y_start * width;
+    uint32_t* destination_pixel = m_destinationbuffer + y_start * m_width;
 
-    int8_t* vectors = (int8_t*)params->vectors;
-    int8_t* vector_pointer = vectors + y_start * width_x2;
+    const uint8_t* vectors = reinterpret_cast<const uint8_t*>(params->vectors);
+    const uint8_t* vector_pointer = vectors + y_start * width_x2;
 
     // vertical loop
     for (y = y_start; y < y_end; y++)
     {
       // horizontal loop
-      for (x = 0; x < width; x++)
+      for (x = 0; x < m_width; x++)
       {
+        if (params->kill)
+          return;
 
         // read the motion vector (actually its opposite)
         vector_x = *(vector_pointer + 0);
         vector_y = *(vector_pointer + 1);
 
         // point to the pixel at [present + motion vector]
-        source_pixel = source + (y + vector_y) * width + x + vector_x;
+        source_pixel = source + (y + vector_y) * m_width + x + vector_x;
 
         // read the pixels at [source + (2,1)]   [source + (-2,1)]   [source + (0,-2)]
         // shift them right by 2 and remove the bits that overflow each byte
@@ -81,101 +145,8 @@ void blur_worker(struct _fische__blurworker_* params)
     }
 
     // mark work as done
-    params->work = 0;
-  }
-
-  return;
-}
-
-struct fische__blurengine* fische__blurengine_new(struct fische* parent)
-{
-
-  struct fische__blurengine* retval =
-      static_cast<fische__blurengine*>(malloc(sizeof(struct fische__blurengine)));
-  retval->priv = static_cast<_fische__blurengine_*>(malloc(sizeof(struct _fische__blurengine_)));
-  struct _fische__blurengine_* P = retval->priv;
-
-  P->fische = parent;
-  P->width = parent->width;
-  P->height = parent->height;
-  P->threads = parent->used_cpus;
-  P->sourcebuffer = FISCHE_PRIVATE(P)->screenbuffer->pixels;
-  P->destinationbuffer = static_cast<uint32_t*>(malloc(P->width * P->height * sizeof(uint32_t)));
-
-  uint_fast8_t i;
-  for (i = 0; i < P->threads; ++i)
-  {
-    P->worker[i].source = P->sourcebuffer;
-    P->worker[i].destination = P->destinationbuffer;
-    P->worker[i].vectors = 0;
-    P->worker[i].width = P->width;
-    P->worker[i].y_start = (i * P->height) / P->threads;
-    P->worker[i].y_end = ((i + 1) * P->height) / P->threads;
-    P->worker[i].kill = 0;
-    P->worker[i].work = 0;
-
-    P->worker[i].thread = new std::thread(blur_worker, &P->worker[i]);
-  }
-
-  return retval;
-}
-
-void fische__blurengine_free(struct fische__blurengine* self)
-{
-  if (!self)
-    return;
-
-  struct _fische__blurengine_* P = self->priv;
-
-  uint_fast8_t i;
-  for (i = 0; i < P->threads; ++i)
-  {
-    P->worker[i].kill = 1;
-    P->worker[i].thread->join();
-    delete P->worker[i].thread;
-    P->worker[i].thread = nullptr;
-  }
-
-  free(self->priv->destinationbuffer);
-  free(self->priv);
-  free(self);
-}
-
-void fische__blurengine_blur(struct fische__blurengine* self, uint16_t* vectors)
-{
-  struct _fische__blurengine_* P = self->priv;
-  uint_fast8_t i;
-  for (i = 0; i < P->threads; ++i)
-  {
-    P->worker[i].source = P->sourcebuffer;
-    P->worker[i].destination = P->destinationbuffer;
-    P->worker[i].vectors = vectors;
-    P->worker[i].work = 1;
+    params->work = false;
   }
 }
 
-void fische__blurengine_swapbuffers(struct fische__blurengine* self)
-{
-  struct _fische__blurengine_* P = self->priv;
-
-  // wait for all workers to finish
-  uint_fast8_t work = 1;
-  while (work)
-  {
-
-    work = 0;
-    uint_fast8_t i;
-    for (i = 0; i < P->threads; ++i)
-    {
-      work += P->worker[i].work;
-    }
-
-    if (work)
-      std::this_thread::sleep_for(std::chrono::microseconds(1));
-  }
-
-  uint32_t* t = P->destinationbuffer;
-  P->destinationbuffer = P->sourcebuffer;
-  P->sourcebuffer = t;
-  FISCHE_PRIVATE(P)->screenbuffer->pixels = t;
-}
+} // namespace fische

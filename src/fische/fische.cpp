@@ -6,308 +6,377 @@
  *  See LICENSE.md for more information.
  */
 
+#include "fische.hpp"
+
+#include "analyst.hpp"
+#include "audiobuffer.hpp"
+#include "blurengine.hpp"
 #include "cpudetect.h"
-#include "fische_internal.h"
+#include "screenbuffer.hpp"
+#include "vector.hpp"
+#include "vectorfield.hpp"
+#include "wavepainter.hpp"
 
 #include <chrono>
-#include <string.h>
+#include <cmath>
+#include <cstring>
 #include <thread>
 
-#ifdef DEBUG
-#include <stdio.h>
-#endif
-
-void create_vectors(fische* F)
+namespace fische
 {
-  struct _fische__internal_* P = static_cast<_fische__internal_*>(F->priv);
-  P->vectorfield = fische__vectorfield_new(F, &P->init_progress, &P->init_cancel);
-  return;
+
+CFische::CFische() : m_init_progress(0), m_init_cancel(false)
+{
+  used_cpus = _fische__cpu_detect_();
+  if (used_cpus > 8)
+    used_cpus = 8;
+
+  frame_counter = 0;
+  audio_format = FISCHE_AUDIOFORMAT_FLOAT;
+  pixel_format = FISCHE_PIXELFORMAT_0xAABBGGRR;
+  width = 512;
+  height = 256;
+  vector_store_load_usage = 0;
+  read_vectors = nullptr;
+  write_vectors = nullptr;
+  on_beat = nullptr;
+  nervous_mode = 0;
+  blur_mode = FISCHE_BLUR_SLICK;
+  line_style = FISCHE_LINESTYLE_ALPHA_SIMULATION;
+  scale = 1;
+  amplification = 0;
+  error_text = "no error";
 }
 
-void indicate_busy(fische* F)
+CFische::~CFische()
 {
-  struct _fische__internal_* P = static_cast<_fische__internal_*>(F->priv);
-  struct fische__screenbuffer* sbuf = P->screenbuffer;
+  // tell init threads to quit
+  m_init_cancel = true;
 
-  fische__point center;
-  center.x = sbuf->priv->width / 2;
-  center.y = sbuf->priv->height / 2;
-  double dim = (center.x > center.y) ? center.y / 2 : center.x / 2;
+  // wait for init threads to quit
+  while (m_init_progress < 1)
+    std::this_thread::sleep_for(std::chrono::microseconds(10));
 
-  double last = -1;
-
-  while ((P->init_progress < 1) && (!P->init_cancel))
-  {
-
-    if ((P->init_progress < 0) || (P->init_progress == last))
-    {
-      std::this_thread::sleep_for(std::chrono::microseconds(10000));
-      continue;
-    }
-
-    last = P->init_progress;
-    double angle = P->init_progress * -2 * 3.1415 + 3.0415;
-
-    fische__vector c1;
-    c1.x = sin(angle) * dim;
-    c1.y = cos(angle) * dim;
-
-    fische__vector c2;
-    c2.x = sin(angle + 0.1) * dim;
-    c2.y = cos(angle + 0.1) * dim;
-
-    fische__vector e1 = fische__vector_single(&c1);
-    fische__vector_mul(&e1, dim / 2);
-    fische__vector e2 = fische__vector_single(&c2);
-    fische__vector_mul(&e2, dim / 2);
-
-    fische__vector c3 = c2;
-    fische__vector_sub(&c3, &e2);
-    fische__vector c4 = c1;
-    fische__vector_sub(&c4, &e1);
-
-    fische__vector_mul(&c1, F->scale);
-    fische__vector_mul(&c2, F->scale);
-    fische__vector_mul(&c3, F->scale);
-    fische__vector_mul(&c4, F->scale);
-
-    fische__vector_add(&c1, &center);
-    fische__vector_add(&c2, &center);
-    fische__vector_add(&c3, &center);
-    fische__vector_add(&c4, &center);
-
-    fische__screenbuffer_lock(sbuf);
-    fische__screenbuffer_line(sbuf, c1.x, c1.y, c2.x, c2.y, 0xffffffff);
-    fische__screenbuffer_line(sbuf, c2.x, c2.y, c3.x, c3.y, 0xffffffff);
-    fische__screenbuffer_line(sbuf, c3.x, c3.y, c4.x, c4.y, 0xffffffff);
-    fische__screenbuffer_line(sbuf, c4.x, c4.y, c1.x, c1.y, 0xffffffff);
-    fische__screenbuffer_unlock(sbuf);
-  }
-
-  return;
+  m_audiobuffer.reset();
+  m_blurengine.reset();
+  m_vectorfield.reset();
+  m_wavepainter.reset();
+  m_screenbuffer.reset();
+  m_analyst.reset();
 }
 
-struct fische* fische_new()
-{
-  struct fische* retval = static_cast<fische*>(malloc(sizeof(struct fische)));
-
-  retval->used_cpus = _fische__cpu_detect_();
-  if (retval->used_cpus > 8)
-    retval->used_cpus = 8;
-
-  retval->frame_counter = 0;
-  retval->audio_format = FISCHE_AUDIOFORMAT_FLOAT;
-  retval->pixel_format = FISCHE_PIXELFORMAT_0xAABBGGRR;
-  retval->width = 512;
-  retval->height = 256;
-  retval->read_vectors = 0;
-  retval->write_vectors = 0;
-  retval->on_beat = 0;
-  retval->nervous_mode = 0;
-  retval->blur_mode = FISCHE_BLUR_SLICK;
-  retval->line_style = FISCHE_LINESTYLE_ALPHA_SIMULATION;
-  retval->scale = 1;
-  retval->amplification = 0;
-  retval->priv = 0;
-  retval->error_text = "no error";
-
-  return retval;
-}
-
-int fische_start(struct fische* handle)
+bool CFische::Start()
 {
   // plausibility checks
-  if ((handle->used_cpus > 8) || (handle->used_cpus < 1))
+  if ((used_cpus > 8) || (used_cpus < 1))
   {
-    handle->error_text = "CPU count out of range (1 <= used_cpus <= 8)";
-    return 1;
+    error_text = "CPU count out of range (1 <= used_cpus <= 8)";
+    return false;
   }
 
-  if (handle->audio_format >= _FISCHE__AUDIOFORMAT_LAST_)
+  if (audio_format >= _FISCHE__AUDIOFORMAT_LAST_)
   {
-    handle->error_text = "audio format invalid";
-    return 1;
+    error_text = "audio format invalid";
+    return false;
   }
 
-  if (handle->line_style >= _FISCHE__LINESTYLE_LAST_)
+  if (line_style >= _FISCHE__LINESTYLE_LAST_)
   {
-    handle->error_text = "line style invalid";
-    return 1;
+    error_text = "line style invalid";
+    return false;
   }
 
-  if (handle->frame_counter != 0)
+  if (frame_counter != 0)
   {
-    handle->error_text = "frame counter garbled";
-    return 1;
+    error_text = "frame counter garbled";
+    return false;
   }
 
-  if ((handle->amplification < -10) || (handle->amplification > 10))
+  if ((amplification < -10) || (amplification > 10))
   {
-    handle->error_text = "amplification value out of range (-10 <= amplification <= 10)";
-    return 1;
+    error_text = "amplification value out of range (-10 <= amplification <= 10)";
+    return false;
   }
 
-  if ((handle->height < 16) || (handle->height > 2048))
+  if ((height < 16) || (height > 2048))
   {
-    handle->error_text = "height value out of range (16 <= height <= 2048)";
-    return 1;
+    error_text = "height value out of range (16 <= height <= 2048)";
+    return false;
   }
 
-  if ((handle->width < 16) || (handle->width > 2048))
+  if ((width < 16) || (width > 2048))
   {
-    handle->error_text = "width value out of range (16 <= width <= 2048)";
-    return 1;
+    error_text = "width value out of range (16 <= width <= 2048)";
+    return false;
   }
 
-  if (handle->width % 4 != 0)
+  if (width % 4 != 0)
   {
-    handle->error_text = "width value invalid (must be a multiple of four)";
-    return 1;
+    error_text = "width value invalid (must be a multiple of four)";
+    return false;
   }
 
-  if (handle->pixel_format >= _FISCHE__PIXELFORMAT_LAST_)
+  if (pixel_format >= _FISCHE__PIXELFORMAT_LAST_)
   {
-    handle->error_text = "pixel format invalid";
-    return 1;
+    error_text = "pixel format invalid";
+    return false;
   }
 
-  if ((handle->scale < 0.5) || (handle->scale > 2))
+  if ((scale < 0.5) || (scale > 2))
   {
-    handle->error_text = "scale value out of range (0.5 <= scale <= 2.0)";
-    return 1;
+    error_text = "scale value out of range (0.5 <= scale <= 2.0)";
+    return false;
   }
 
-  if (handle->blur_mode >= _FISCHE__BLUR_LAST_)
+  if (blur_mode >= _FISCHE__BLUR_LAST_)
   {
-    handle->error_text = "blur option invalid";
-    return 1;
+    error_text = "blur option invalid";
+    return false;
   }
 
-  // initialize private struct
-  handle->priv = malloc(sizeof(struct _fische__internal_));
-  memset(handle->priv, '\0', sizeof(struct _fische__internal_));
-  struct _fische__internal_* P = static_cast<_fische__internal_*>(handle->priv);
+  m_init_progress = -1;
 
-  P->init_progress = -1;
-
-  P->analyst = fische__analyst_new(handle);
-  P->screenbuffer = fische__screenbuffer_new(handle);
-  P->wavepainter = fische__wavepainter_new(handle);
-  P->blurengine = fische__blurengine_new(handle);
-  P->audiobuffer = fische__audiobuffer_new(handle);
+  m_analyst = std::make_unique<fische::CAnalyst>(this);
+  m_screenbuffer = std::make_unique<fische::CScreenBuffer>(this);
+  m_wavepainter = std::make_unique<fische::CWavePainter>(this);
+  m_blurengine = std::make_unique<fische::CBlurEngine>(this);
+  m_audiobuffer = std::make_unique<fische::CAudioBuffer>(audio_format);
 
   // start vector creation and busy indicator threads
-  std::thread(create_vectors, handle).detach();
-  std::thread(indicate_busy, handle).detach();
+  std::thread(&CFische::ThreadCreateVectors, this).detach();
+  std::thread(&CFische::ThreadIndicateBusy, this).detach();
 
-  return 0;
+  return true;
 }
 
-uint32_t* fische_render(struct fische* handle)
+uint32_t* CFische::Render()
 {
-  struct _fische__internal_* P = static_cast<_fische__internal_*>(handle->priv);
-
   // only if init completed
-  if (P->init_progress >= 1)
+  if (m_init_progress >= 1)
   {
-
     // analyse sound data
-    fische__audiobuffer_lock(P->audiobuffer);
-    fische__audiobuffer_get(P->audiobuffer);
-    int_fast8_t analysis = fische__analyst_analyse(P->analyst, P->audiobuffer->back_samples,
-                                                   P->audiobuffer->back_sample_count);
+    m_audiobuffer->Lock();
+    m_audiobuffer->Get();
+    int_fast8_t analysis =
+        m_analyst->Analyse(m_audiobuffer->BackSamples(), m_audiobuffer->BackSampleCount());
 
     // act accordingly
-    if (handle->nervous_mode)
+    if (nervous_mode)
     {
       if (analysis >= 2)
-        fische__wavepainter_change_shape(P->wavepainter);
+        m_wavepainter->ChangeShape();
       if (analysis >= 1)
-        fische__vectorfield_change(P->vectorfield);
+        m_vectorfield->Change();
     }
     else
     {
       if (analysis >= 1)
-        fische__wavepainter_change_shape(P->wavepainter);
+        m_wavepainter->ChangeShape();
       if (analysis >= 2)
-        fische__vectorfield_change(P->vectorfield);
+        m_vectorfield->Change();
     }
 
     if (analysis >= 3)
     {
-      fische__wavepainter_beat(P->wavepainter, P->analyst->frames_per_beat);
+      m_wavepainter->Beat(m_analyst->GetFramesPerBeat());
     }
     if (analysis >= 4)
     {
-      if (handle->on_beat)
-        handle->on_beat(handle->handler, P->analyst->frames_per_beat);
+      OnBeat(m_analyst->GetFramesPerBeat());
     }
 
-    P->audio_valid = analysis >= 0 ? 1 : 0;
+    m_audio_valid = analysis >= 0;
 
-    fische__wavepainter_change_color(P->wavepainter, P->analyst->frames_per_beat,
-                                     P->analyst->relative_energy);
-
+    m_wavepainter->ChangeColor(m_analyst->GetFramesPerBeat(), m_analyst->GetRelativeEnergy());
 
     // wait for blurring to be finished
     // and swap buffers
-    fische__screenbuffer_lock(P->screenbuffer);
-    fische__blurengine_swapbuffers(P->blurengine);
-    fische__screenbuffer_unlock(P->screenbuffer);
+    m_screenbuffer->Lock();
+    m_blurengine->SwapBuffers();
+    m_screenbuffer->Unlock();
 
     // draw waves
-    if (P->audio_valid)
-      fische__wavepainter_paint(P->wavepainter, P->audiobuffer->front_samples,
-                                P->audiobuffer->front_sample_count);
+    if (m_audio_valid)
+      m_wavepainter->Paint(m_audiobuffer->FrontSamples(), m_audiobuffer->FrontSampleCount());
 
     // start blurring for the next frame
-    fische__blurengine_blur(P->blurengine, P->vectorfield->field);
+    m_blurengine->Blur(m_vectorfield->Field());
 
-    fische__audiobuffer_unlock(P->audiobuffer);
+    m_audiobuffer->Unlock();
   }
 
-  handle->frame_counter++;
+  frame_counter++;
 
-  return P->screenbuffer->pixels;
+  return m_screenbuffer->Pixels();
 }
 
-void fische_free(struct fische* handle)
+void CFische::AudioData(const void* data, size_t data_size)
 {
-  if (!handle)
+  if (m_audiobuffer == nullptr)
     return;
 
-  struct _fische__internal_* P = static_cast<_fische__internal_*>(handle->priv);
+  m_audiobuffer->Lock();
+  m_audiobuffer->Insert(data, data_size);
+  m_audiobuffer->Unlock();
+}
 
-  if (handle->priv)
+void CFische::ThreadCreateVectors()
+{
+  m_vectorfield = std::make_unique<fische::CVectorField>(this, m_init_progress, m_init_cancel);
+}
+
+void CFische::ThreadIndicateBusy()
+{
+  fische::point center;
+  center.x = m_screenbuffer->Width() / 2;
+  center.y = m_screenbuffer->Height() / 2;
+  double dim = (center.x > center.y) ? center.y / 2 : center.x / 2;
+
+  double last = -1;
+
+  while ((m_init_progress < 1) && (!m_init_cancel))
   {
-    // tell init threads to quit
-    P->init_cancel = 1;
 
-    // wait for init threads to quit
-    while (P->init_progress < 1)
-      std::this_thread::sleep_for(std::chrono::microseconds(10));
+    if ((m_init_progress < 0) || (m_init_progress == last))
+    {
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+      continue;
+    }
 
-    fische__audiobuffer_free(P->audiobuffer);
-    fische__blurengine_free(P->blurengine);
-    fische__vectorfield_free(P->vectorfield);
-    fische__wavepainter_free(P->wavepainter);
-    fische__screenbuffer_free(P->screenbuffer);
-    fische__analyst_free(P->analyst);
+    last = m_init_progress;
+    double angle = m_init_progress * -2 * 3.1415 + 3.0415;
 
-    free(handle->priv);
+    fische::vector c1;
+    c1.x = sin(angle) * dim;
+    c1.y = cos(angle) * dim;
+
+    fische::vector c2;
+    c2.x = sin(angle + 0.1) * dim;
+    c2.y = cos(angle + 0.1) * dim;
+
+    fische::vector e1 = fische::vector_single(&c1);
+    fische::vector_mul(&e1, dim / 2);
+    fische::vector e2 = fische::vector_single(&c2);
+    fische::vector_mul(&e2, dim / 2);
+
+    fische::vector c3 = c2;
+    fische::vector_sub(&c3, &e2);
+    fische::vector c4 = c1;
+    fische::vector_sub(&c4, &e1);
+
+    fische::vector_mul(&c1, scale);
+    fische::vector_mul(&c2, scale);
+    fische::vector_mul(&c3, scale);
+    fische::vector_mul(&c4, scale);
+
+    fische::vector_add(&c1, &center);
+    fische::vector_add(&c2, &center);
+    fische::vector_add(&c3, &center);
+    fische::vector_add(&c4, &center);
+
+    m_screenbuffer->Lock();
+    m_screenbuffer->Line(c1.x, c1.y, c2.x, c2.y, 0xffffffff);
+    m_screenbuffer->Line(c2.x, c2.y, c3.x, c3.y, 0xffffffff);
+    m_screenbuffer->Line(c3.x, c3.y, c4.x, c4.y, 0xffffffff);
+    m_screenbuffer->Line(c4.x, c4.y, c1.x, c1.y, 0xffffffff);
+    m_screenbuffer->Unlock();
+  }
+}
+
+bool CFische::SetWidthHeight(uint16_t width, uint16_t height)
+{
+  if ((width < 16) || (width > 2048) || (height < 16) || (height > 2048))
+  {
+    error_text = "width and height out of range (16 <= width, height <= 2048)";
+    return false;
   }
 
-  free(handle);
+  this->width = width;
+  this->height = height;
+  return true;
 }
 
-void fische_audiodata(struct fische* handle, const void* data, size_t data_size)
+bool CFische::SetUsedCPUs(uint8_t used_cpus)
 {
-  struct _fische__internal_* P = static_cast<_fische__internal_*>(handle->priv);
-
-  if (NULL == P->audiobuffer)
-    return;
-
-  fische__audiobuffer_lock(P->audiobuffer);
-  fische__audiobuffer_insert(P->audiobuffer, data, data_size);
-  fische__audiobuffer_unlock(P->audiobuffer);
+  if ((used_cpus < 1) || (used_cpus > 8))
+  {
+    error_text = "CPU count out of range (1 <= used_cpus <= 8)";
+    return false;
+  }
+  this->used_cpus = used_cpus;
+  return true;
 }
+
+bool CFische::SetNervousMode(bool nervous_mode)
+{
+  this->nervous_mode = nervous_mode ? 1 : 0;
+  return true;
+}
+
+bool CFische::SetAudioFormat(FISCHE_AUDIOFORMAT audio_format)
+{
+  if (audio_format >= _FISCHE__AUDIOFORMAT_LAST_)
+  {
+    error_text = "audio format invalid";
+    return false;
+  }
+  this->audio_format = audio_format;
+  return true;
+}
+
+bool CFische::SetPixelFormat(FISCHE_PIXELFORMAT pixel_format)
+{
+  if (pixel_format >= _FISCHE__PIXELFORMAT_LAST_)
+  {
+    error_text = "pixel format invalid";
+    return false;
+  }
+  this->pixel_format = pixel_format;
+  return true;
+}
+
+bool CFische::SetBlurMode(FISCHE_BLUR blur_mode)
+{
+  if (blur_mode >= _FISCHE__BLUR_LAST_)
+  {
+    error_text = "blur option invalid";
+    return false;
+  }
+  this->blur_mode = blur_mode;
+  return true;
+}
+
+bool CFische::SetLineStyle(FISCHE_LINESTYLE line_style)
+{
+  if (line_style >= _FISCHE__LINESTYLE_LAST_)
+  {
+    error_text = "line style invalid";
+    return false;
+  }
+  this->line_style = line_style;
+  return true;
+}
+
+bool CFische::SetScale(double scale)
+{
+  if ((scale < 0.5) || (scale > 2))
+  {
+    error_text = "scale value out of range (0.5 <= scale <= 2.0)";
+    return false;
+  }
+  this->scale = scale;
+  return true;
+}
+
+bool CFische::SetAmplification(double amplification)
+{
+  if ((amplification < -10) || (amplification > 10))
+  {
+    error_text = "amplification value out of range (-10 <= amplification <= 10)";
+    return false;
+  }
+  this->amplification = amplification;
+  return true;
+}
+
+} // namespace fische

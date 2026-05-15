@@ -8,50 +8,47 @@
 
 #pragma once
 
-#include <stdint.h>
+#include <array>
+#include <atomic>
+#include <cstdint>
 #include <thread>
 
-struct fische;
-
-struct _fische__blurworker_;
-struct _fische__blurengine_;
-struct fische__blurengine;
-
-
-struct fische__blurengine* fische__blurengine_new(struct fische* parent);
-void fische__blurengine_free(struct fische__blurengine* self);
-
-void fische__blurengine_blur(struct fische__blurengine* self, uint16_t* vectors);
-void fische__blurengine_swapbuffers(struct fische__blurengine* self);
-
-
-struct _fische__blurworker_
+namespace fische
 {
-  std::thread* thread;
-  uint32_t* source;
-  uint32_t* destination;
-  uint_fast16_t width;
-  uint_fast16_t y_start;
-  uint_fast16_t y_end;
-  uint16_t* vectors;
-  uint_fast8_t work;
-  uint_fast8_t kill;
+
+class CFische;
+
+class CBlurEngine
+{
+public:
+  CBlurEngine(const CFische* parent);
+  ~CBlurEngine();
+
+  void Blur(const uint16_t* vectors);
+  void SwapBuffers();
+
+private:
+  const CFische* m_fische;
+  const uint_fast16_t m_width;
+  const uint_fast16_t m_height;
+  const uint_fast8_t m_threads;
+
+  uint32_t* m_sourcebuffer;
+  uint32_t* m_destinationbuffer;
+
+  struct _blurworker_
+  {
+    std::thread* thread;
+    uint_fast16_t y_start;
+    uint_fast16_t y_end;
+    const uint16_t* vectors;
+    std::atomic<bool> work;
+    std::atomic<bool> kill;
+  };
+
+  void ThreadWorker(_blurworker_* params);
+
+  std::array<_blurworker_, 8> m_worker;
 };
 
-struct _fische__blurengine_
-{
-  int_fast16_t width;
-  int_fast16_t height;
-  uint_fast8_t threads;
-  uint32_t* sourcebuffer;
-  uint32_t* destinationbuffer;
-
-  struct _fische__blurworker_ worker[8];
-
-  struct fische* fische;
-};
-
-struct fische__blurengine
-{
-  struct _fische__blurengine_* priv;
-};
+} // namespace fische

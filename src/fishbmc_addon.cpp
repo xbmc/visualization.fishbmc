@@ -6,9 +6,9 @@
  *  See LICENSE.md for more information.
  */
 
-#include "fishbmc_addon.h"
+#define _USE_MATH_DEFINES
 
-#include "fische/fische_internal.h"
+#include "fishbmc_addon.h"
 
 #include <cmath>
 #include <cstring>
@@ -21,16 +21,10 @@
 
 CVisualizationFishBMC::CVisualizationFishBMC()
 {
-  m_fische = fische_new();
-  m_fische->on_beat = &on_beat;
-  m_fische->pixel_format = FISCHE_PIXELFORMAT_0xAABBGGRR;
-  m_fische->line_style = FISCHE_LINESTYLE_THICK;
-  m_aspect = double(Width()) / double(Height());
+  m_aspect = float(Width()) / float(Height());
   m_texleft = (2 - m_aspect) / 4;
   m_texright = 1 - m_texleft;
   m_filemode = kodi::addon::GetSettingBoolean("filemode");
-  m_fische->nervous_mode = kodi::addon::GetSettingBoolean("nervous") ? 1 : 0;
-  m_fische->handler = this;
 
   int detail = kodi::addon::GetSettingInt("detail");
   m_size = 128;
@@ -51,12 +45,12 @@ CVisualizationFishBMC::CVisualizationFishBMC()
   //     screen bottom right: (1, 1)
   //     screen depth clipping: 3 to 15
   m_projMatrix = glm::frustum(-1.0f, 1.0f, 1.0f, -1.0f, 3.0f, 15.0f);
-}
 
-CVisualizationFishBMC::~CVisualizationFishBMC()
-{
-  fische_free(m_fische);
-  m_fische = nullptr;
+  CFische::SetAudioFormat(FISCHE_AUDIOFORMAT_FLOAT);
+  CFische::SetPixelFormat(FISCHE_PIXELFORMAT_0xAABBGGRR);
+  CFische::SetLineStyle(FISCHE_LINESTYLE_THICK);
+  CFische::SetNervousMode(kodi::addon::GetSettingBoolean("nervous") ? 1 : 0);
+  CFische::SetVectorStoreLoadUsage(m_filemode);
 }
 
 bool CVisualizationFishBMC::Start(int channels,
@@ -66,29 +60,22 @@ bool CVisualizationFishBMC::Start(int channels,
 {
   m_errorstate = false;
 
-  m_fische->audio_format = FISCHE_AUDIOFORMAT_FLOAT;
+  CFische::SetAudioFormat(FISCHE_AUDIOFORMAT_FLOAT);
+  CFische::SetWidthHeight(m_size * 2, m_size);
 
-  m_fische->height = m_size;
-  m_fische->width = 2 * m_size;
-
-  if (m_filemode)
+  if (!m_filemode)
   {
-    m_fische->read_vectors = &read_vectors;
-    m_fische->write_vectors = &write_vectors;
-  }
-  else
-  {
-    delete_vectors();
+    DeleteVectors();
   }
 
-  if (fische_start(m_fische) != 0)
+  if (!CFische::Start())
   {
-    std::cerr << "fische failed to start" << std::endl;
+    kodi::Log(ADDON_LOG_ERROR, "fische failed to start: %s", CFische::GetErrorText().c_str());
     m_errorstate = true;
     return false;
   }
 
-  uint32_t* pixels = fische_render(m_fische);
+  uint32_t* pixels = CFische::Render();
 
   if (!m_shaderLoaded)
   {
@@ -112,7 +99,7 @@ bool CVisualizationFishBMC::Start(int channels,
   glBindTexture(GL_TEXTURE_2D, m_texture);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_fische->width, m_fische->height, 0, GL_RGBA,
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, CFische::GetWidth(), CFische::GetHeight(), 0, GL_RGBA,
                GL_UNSIGNED_BYTE, pixels);
 
   m_isrotating = false;
@@ -147,7 +134,7 @@ void CVisualizationFishBMC::AudioData(const float* pAudioData, size_t iAudioData
   if (!m_startOK)
     return;
 
-  fische_audiodata(m_fische, pAudioData, iAudioDataLength * 4);
+  CFische::AudioData(pAudioData, iAudioDataLength * 4);
 }
 
 void CVisualizationFishBMC::Render()
@@ -160,9 +147,9 @@ void CVisualizationFishBMC::Render()
   // check if this frame is to be skipped
   if (++frame % m_framedivisor == 0)
   {
-    uint32_t* pixels = fische_render(m_fische);
+    uint32_t* pixels = CFische::Render();
     glBindTexture(GL_TEXTURE_2D, m_texture);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_fische->width, m_fische->height, GL_RGBA,
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, CFische::GetWidth(), CFische::GetHeight(), GL_RGBA,
                     GL_UNSIGNED_BYTE, pixels);
     if (m_isrotating)
       m_angle += m_angleincrement;
@@ -173,7 +160,7 @@ void CVisualizationFishBMC::Render()
   {
     if (m_angle - m_lastangle > 180)
     {
-      m_lastangle = m_lastangle ? 0 : 180;
+      m_lastangle = m_lastangle ? 0.0f : 180.0f;
       m_angle = m_lastangle;
       m_isrotating = false;
     }
@@ -181,7 +168,7 @@ void CVisualizationFishBMC::Render()
 
   // how many quads will there be?
   int n_Y = 8;
-  int n_X = (m_aspect * 8 + 0.5);
+  int n_X = int(m_aspect * 8.0f + 0.5f);
 
   // one-time initialization of rotation axis array
   if (m_axis.empty())
@@ -197,21 +184,21 @@ void CVisualizationFishBMC::Render()
 
   // loop over and draw all quads
   int quad_count = 0;
-  double quad_width = 4.0 / n_X;
-  double quad_height = 4.0 / n_Y;
-  double tex_width = (m_texright - m_texleft);
+  float quad_width = 4.0f / n_X;
+  float quad_height = 4.0f / n_Y;
+  float tex_width = (m_texright - m_texleft);
 
-  for (double X = 0; X < n_X; X += 1)
+  for (float X = 0; X < n_X; X += 1)
   {
-    for (double Y = 0; Y < n_Y; Y += 1)
+    for (float Y = 0; Y < n_Y; Y += 1)
     {
-      double center_x = -2 + (X + 0.5) * 4 / n_X;
-      double center_y = -2 + (Y + 0.5) * 4 / n_Y;
-      double tex_left = m_texleft + tex_width * X / n_X;
-      double tex_right = m_texleft + tex_width * (X + 1) / n_X;
-      double tex_top = Y / n_Y;
-      double tex_bottom = (Y + 1) / n_Y;
-      double angle = (m_angle - m_lastangle) * 4 - (X + Y * n_X) / (n_X * n_Y) * 360;
+      float center_x = -2 + (X + 0.5f) * 4 / n_X;
+      float center_y = -2 + (Y + 0.5f) * 4 / n_Y;
+      float tex_left = m_texleft + tex_width * X / n_X;
+      float tex_right = m_texleft + tex_width * (X + 1) / n_X;
+      float tex_top = Y / n_Y;
+      float tex_bottom = (Y + 1) / n_Y;
+      float angle = (m_angle - m_lastangle) * 4 - (X + Y * n_X) / (n_X * n_Y) * 360;
       if (angle < 0)
         angle = 0;
       if (angle > 360)
@@ -232,7 +219,7 @@ ADDON_STATUS CVisualizationFishBMC::SetSetting(const std::string& settingName,
     return ADDON_STATUS_UNKNOWN;
 
   if (settingName == "nervous")
-    m_fische->nervous_mode = settingValue.GetBoolean() ? 1 : 0;
+    CFische::SetNervousMode(settingValue.GetBoolean());
   else if (settingName == "filemode")
     m_filemode = settingValue.GetBoolean();
   else if (settingName == "detail")
@@ -274,6 +261,17 @@ bool CVisualizationFishBMC::OnEnabled()
   return true;
 }
 
+void CVisualizationFishBMC::OnBeat(double frames_per_beat)
+{
+  if (!m_isrotating)
+  {
+    m_isrotating = true;
+    if (frames_per_beat < 1)
+      frames_per_beat = 12.0;
+    m_angleincrement = float(180.0f / 4.0f / frames_per_beat);
+  }
+}
+
 // OpenGL: paint a textured quad
 void CVisualizationFishBMC::textured_quad(float center_x,
                                           float center_y,
@@ -286,7 +284,7 @@ void CVisualizationFishBMC::textured_quad(float center_x,
                                           float tex_top,
                                           float tex_bottom)
 {
-  float scale = 1 - sin(angle / 360 * M_PI) / 3;
+  float scale = 1 - sinf(angle / 360.0f * float(M_PI)) / 3;
 
   glm::mat4 modelMatrixOld = m_modelMatrix;
   m_modelMatrix = glm::translate(m_modelMatrix, glm::vec3(center_x, center_y, 0));
@@ -369,33 +367,13 @@ void CVisualizationFishBMC::finish_render()
   glDisableVertexAttribArray(m_aVertexLoc);
 }
 
-void CVisualizationFishBMC::on_beat(void* handler, double frames_per_beat)
+void CVisualizationFishBMC::WriteVectors(const void* data, size_t bytes)
 {
-  if (!handler)
-    return;
-
-  CVisualizationFishBMC* thisClass = static_cast<CVisualizationFishBMC*>(handler);
-  if (!thisClass->m_isrotating)
-  {
-    thisClass->m_isrotating = true;
-    if (frames_per_beat < 1)
-      frames_per_beat = 12;
-    thisClass->m_angleincrement = 180 / 4 / frames_per_beat;
-  }
-}
-
-void CVisualizationFishBMC::write_vectors(void* handler, const void* data, size_t bytes)
-{
-  if (!handler)
-    return;
-
-  CVisualizationFishBMC* thisClass = static_cast<CVisualizationFishBMC*>(handler);
-
   std::string dirname = kodi::addon::GetUserPath("data");
   kodi::vfs::CreateDirectory(dirname);
 
   std::ostringstream filename;
-  filename << dirname << "/" << thisClass->m_fische->height;
+  filename << dirname << "/" << CFische::GetHeight();
 
   // open the file
   std::fstream vectorsfile(filename.str().c_str(), std::fstream::out | std::fstream::binary);
@@ -407,18 +385,13 @@ void CVisualizationFishBMC::write_vectors(void* handler, const void* data, size_
   vectorsfile.close();
 }
 
-size_t CVisualizationFishBMC::read_vectors(void* handler, void** data)
+size_t CVisualizationFishBMC::ReadVectors(void** data)
 {
-  if (!handler)
-    return 0;
-
-  CVisualizationFishBMC* thisClass = static_cast<CVisualizationFishBMC*>(handler);
-
   std::string dirname = kodi::addon::GetUserPath("data");
   kodi::vfs::CreateDirectory(dirname);
 
   std::ostringstream filename;
-  filename << dirname << "/" << thisClass->m_fische->height;
+  filename << dirname << "/" << CFische::GetHeight();
 
   // open the file
   std::fstream vectorsfile(filename.str().c_str(), std::fstream::in);
@@ -436,7 +409,7 @@ size_t CVisualizationFishBMC::read_vectors(void* handler, void** data)
   return n;
 }
 
-void CVisualizationFishBMC::delete_vectors()
+void CVisualizationFishBMC::DeleteVectors()
 {
   std::string dirname = kodi::addon::GetUserPath("data");
   kodi::vfs::CreateDirectory(dirname);

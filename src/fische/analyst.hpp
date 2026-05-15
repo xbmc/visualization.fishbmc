@@ -8,38 +8,53 @@
 
 #pragma once
 
-#include <stdint.h>
+#include <array>
+#include <cstdint>
+#include <cstddef>
 
-struct fische;
-struct _fische__analyst_;
-struct fische__analyst;
-
-
-struct fische__analyst* fische__analyst_new(struct fische* parent);
-void fische__analyst_free(struct fische__analyst* self);
-
-int_fast8_t fische__analyst_analyse(struct fische__analyst* self, double* data, uint_fast16_t size);
-
-
-struct _fische__analyst_
+namespace fische
 {
-  uint_fast8_t state;
-  double moving_avg_30;
-  double moving_avg_03;
-  double std_dev;
-  double intensity_moving_avg;
-  double intensity_std_dev;
-  uint_fast32_t last_beat_frame;
-  uint_fast16_t* beat_gap_history;
-  uint_fast8_t bghist_head;
 
-  struct fische* fische;
+class CFische;
+
+class CAnalyst
+{
+public:
+  CAnalyst(const CFische* parent);
+  ~CAnalyst() = default;
+
+  int_fast8_t Analyse(const double* data, size_t size);
+  inline double GetRelativeEnergy() const { return m_relative_energy; }
+  inline double GetFramesPerBeat() const { return m_frames_per_beat; }
+
+private:
+  const CFische* m_fische;
+
+  enum STATE
+  {
+    WAITING,
+    MAYBEWAITING,
+    FISCHE_BEAT
+  };
+
+  static const uint_fast8_t BEAT_GAP_HISTORY_SIZE{30};
+
+  static int CompareInt(void const* value1, void const* value2);
+  double GuessFramesPerBeat();
+  double GetAudioLevel(const double* data, size_t data_size);
+
+  double m_relative_energy{1.0};
+  double m_frames_per_beat{0.0};
+
+  STATE m_state{WAITING};
+  double m_moving_avg_30{0.0};
+  double m_moving_avg_03{0.0};
+  double m_std_dev{0.0};
+  double m_intensity_moving_avg{0.0};
+  double m_intensity_std_dev{0.0};
+  uint_fast32_t m_last_beat_frame{0};
+  std::array<uint_fast16_t, BEAT_GAP_HISTORY_SIZE> m_beat_gap_history{'\0'};
+  uint_fast8_t m_bghist_head{0};
 };
 
-struct fische__analyst
-{
-  double relative_energy;
-  double frames_per_beat;
-
-  struct _fische__analyst_* priv;
-};
+} // namespace fische
