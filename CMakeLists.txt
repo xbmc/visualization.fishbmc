@@ -35,16 +35,16 @@ set(FISH_SOURCES src/fishbmc_addon.cpp
                  src/fische/wavepainter.cpp)
 
 set(FISH_HEADERS src/fishbmc_addon.h
-                 src/fische/analyst.h
-                 src/fische/audiobuffer.h
-                 src/fische/blurengine.h
+                 src/fische/analyst.hpp
+                 src/fische/audiobuffer.hpp
+                 src/fische/blurengine.hpp
                  src/fische/cpudetect.h
                  src/fische/fische.h
                  src/fische/fische_internal.h
-                 src/fische/screenbuffer.h
-                 src/fische/vectorfield.h
-                 src/fische/vector.h
-                 src/fische/wavepainter.h)
+                 src/fische/screenbuffer.hpp
+                 src/fische/vectorfield.hpp
+                 src/fische/vector.hpp
+                 src/fische/wavepainter.hpp)
 
 build_addon(visualization.fishbmc FISH DEPLIBS)
 

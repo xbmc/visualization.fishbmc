@@ -6,7 +6,7 @@
  *  See LICENSE.md for more information.
  */
 
-#include "vector.h"
+#include "vector.hpp"
 
 double fische__vector_length(fische__vector* self)
 {

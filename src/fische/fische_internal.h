@@ -9,14 +9,14 @@
 #ifndef FISCHE_INTERNAL_H
 #define FISCHE_INTERNAL_H
 
-#include "analyst.h"
-#include "audiobuffer.h"
-#include "blurengine.h"
+#include "analyst.hpp"
+#include "audiobuffer.hpp"
+#include "blurengine.hpp"
 #include "fische.h"
-#include "screenbuffer.h"
-#include "vector.h"
-#include "vectorfield.h"
-#include "wavepainter.h"
+#include "screenbuffer.hpp"
+#include "vector.hpp"
+#include "vectorfield.hpp"
+#include "wavepainter.hpp"
 
 #ifdef WIN32
 #ifndef M_PI
