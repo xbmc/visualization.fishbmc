@@ -369,56 +369,77 @@ void CVisualizationFishBMC::finish_render()
 
 void CVisualizationFishBMC::WriteVectors(const void* data, size_t bytes)
 {
-  std::string dirname = kodi::addon::GetUserPath("data");
-  kodi::vfs::CreateDirectory(dirname);
-
-  std::ostringstream filename;
-  filename << dirname << "/" << CFische::GetHeight();
-
-  // open the file
-  std::fstream vectorsfile(filename.str().c_str(), std::fstream::out | std::fstream::binary);
-  if (!vectorsfile.good())
+  if (!data)
     return;
 
+  kodi::vfs::CreateDirectory(kodi::addon::GetUserPath("data"));
+
+  const std::string filename =
+      kodi::addon::GetUserPath("data/vector-" + std::to_string(CFische::GetHeight()) + "px");
+
+  kodi::vfs::CFile vectorsfile;
+
+  // open the file
+  if (!vectorsfile.OpenFileForWrite(filename, true))
+  {
+    kodi::Log(ADDON_LOG_ERROR, "File write \"%s\": Failed to open file", filename.c_str());
+    return;
+  }
+
   // write it
-  vectorsfile.write(reinterpret_cast<const char*>(data), bytes);
-  vectorsfile.close();
+  ssize_t size = vectorsfile.Write(data, bytes);
+  if (size < 0 || bytes != size)
+  {
+    kodi::Log(ADDON_LOG_ERROR, "File write \"%s\": Size mismatch of writed file", filename.c_str());
+    return;
+  }
 }
 
 size_t CVisualizationFishBMC::ReadVectors(void** data)
 {
-  std::string dirname = kodi::addon::GetUserPath("data");
-  kodi::vfs::CreateDirectory(dirname);
-
-  std::ostringstream filename;
-  filename << dirname << "/" << CFische::GetHeight();
-
-  // open the file
-  std::fstream vectorsfile(filename.str().c_str(), std::fstream::in);
-  if (!vectorsfile.good())
+  const std::string filename =
+      kodi::addon::GetUserPath("data/vector-" + std::to_string(CFische::GetHeight()) + "px");
+  if (!kodi::vfs::FileExists(filename))
     return 0;
 
-  vectorsfile.seekg(0, std::ios::end);
-  size_t n = vectorsfile.tellg();
-  vectorsfile.seekg(0, std::ios::beg);
+  kodi::vfs::CFile vectorsfile;
 
-  *data = malloc(n);
-  vectorsfile.read(reinterpret_cast<char*>(*data), n);
-  vectorsfile.close();
+  // open the file
+  if (!vectorsfile.OpenFile(filename))
+  {
+    kodi::Log(ADDON_LOG_ERROR, "File read \"%s\": Failed to open file", filename);
+    return 0;
+  }
 
-  return n;
+  ssize_t size = vectorsfile.GetLength();
+  if (size <= 0)
+  {
+    kodi::Log(ADDON_LOG_ERROR, "File read \"%s\": Unable to get size of file", filename);
+    return 0;
+  }
+
+  *data = malloc(size_t(size));
+  ssize_t sizeRead = vectorsfile.Read(*data, size_t(size));
+  if (sizeRead < 0 || sizeRead != size)
+  {
+    kodi::Log(ADDON_LOG_ERROR, "File read \"%s\": Size mismatch of readed file", filename);
+    free(*data);
+    return 0;
+  }
+
+  return sizeRead;
 }
 
 void CVisualizationFishBMC::DeleteVectors()
 {
-  std::string dirname = kodi::addon::GetUserPath("data");
-  kodi::vfs::CreateDirectory(dirname);
+  const std::string dirname = kodi::addon::GetUserPath("data");
+  if (!kodi::vfs::DirectoryExists(dirname))
+    return;
 
   for (int i = 64; i <= 2048; i *= 2)
   {
-    std::ostringstream filename;
-    filename << dirname << "/" << i;
-    kodi::vfs::DeleteFile(filename.str());
+    const std::string filename = dirname + "/vector-" + std::to_string(i) + "px";
+    kodi::vfs::DeleteFile(filename);
   }
 }
 
