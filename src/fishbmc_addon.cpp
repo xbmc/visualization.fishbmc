@@ -53,10 +53,7 @@ CVisualizationFishBMC::CVisualizationFishBMC()
   CFische::SetVectorStoreLoadUsage(m_filemode);
 }
 
-bool CVisualizationFishBMC::Start(int channels,
-                                  int samplesPerSec,
-                                  int bitsPerSample,
-                                  const std::string& songName)
+bool CVisualizationFishBMC::AudioStart(int channels, int samplesPerSec, int bitsPerSample)
 {
   m_errorstate = false;
 
@@ -110,7 +107,7 @@ bool CVisualizationFishBMC::Start(int channels,
   return true;
 }
 
-void CVisualizationFishBMC::Stop()
+void CVisualizationFishBMC::AudioStop()
 {
   if (!m_startOK)
     return;
