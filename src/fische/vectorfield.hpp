@@ -6,8 +6,7 @@
  *  See LICENSE.md for more information.
  */
 
-#ifndef VECTORFIELD_H
-#define VECTORFIELD_H
+#pragma once
 
 #include <stdint.h>
 
@@ -47,5 +46,3 @@ struct fische__vectorfield
 
   struct _fische__vectorfield_* priv;
 };
-
-#endif

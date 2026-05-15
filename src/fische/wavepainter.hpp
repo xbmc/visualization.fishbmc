@@ -6,8 +6,7 @@
  *  See LICENSE.md for more information.
  */
 
-#ifndef WAVEPAINTER_H
-#define WAVEPAINTER_H
+#pragma once
 
 #include <stdint.h>
 
@@ -47,5 +46,3 @@ struct fische__wavepainter
 {
   struct _fische__wavepainter_* priv;
 };
-
-#endif

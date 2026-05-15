@@ -6,8 +6,7 @@
  *  See LICENSE.md for more information.
  */
 
-#ifndef ANALYST_H
-#define ANALYST_H
+#pragma once
 
 #include <stdint.h>
 
@@ -44,5 +43,3 @@ struct fische__analyst
 
   struct _fische__analyst_* priv;
 };
-
-#endif

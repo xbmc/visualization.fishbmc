@@ -6,8 +6,7 @@
  *  See LICENSE.md for more information.
  */
 
-#ifndef AUDIOBUFFER_H
-#define AUDIOBUFFER_H
+#pragma once
 
 #include <stdint.h>
 
@@ -49,5 +48,3 @@ struct fische__audiobuffer
 
   struct _fische__audiobuffer_* priv;
 };
-
-#endif

@@ -6,8 +6,7 @@
  *  See LICENSE.md for more information.
  */
 
-#ifndef F_VECTOR_H
-#define F_VECTOR_H
+#pragma once
 
 #include <math.h>
 #include <stdint.h>
@@ -43,5 +42,3 @@ fische__vector fische__vector_intersect_border(fische__vector* self,
                                                uint_fast16_t width,
                                                uint_fast16_t height,
                                                int_fast8_t direction);
-
-#endif

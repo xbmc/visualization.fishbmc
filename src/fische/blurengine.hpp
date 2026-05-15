@@ -6,8 +6,7 @@
  *  See LICENSE.md for more information.
  */
 
-#ifndef BLURENGINE_H
-#define BLURENGINE_H
+#pragma once
 
 #include <stdint.h>
 #include <thread>
@@ -56,5 +55,3 @@ struct fische__blurengine
 {
   struct _fische__blurengine_* priv;
 };
-
-#endif

@@ -6,8 +6,7 @@
  *  See LICENSE.md for more information.
  */
 
-#ifndef SCREENBUFFER_H
-#define SCREENBUFFER_H
+#pragma once
 
 #include <stdint.h>
 
@@ -49,5 +48,3 @@ struct fische__screenbuffer
 
   struct _fische__screenbuffer_* priv;
 };
-
-#endif
