@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "fische.h"
+#include "fische/fische.h"
 
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>

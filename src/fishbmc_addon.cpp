@@ -8,7 +8,7 @@
 
 #include "fishbmc_addon.h"
 
-#include "fische_internal.h"
+#include "fische/fische_internal.h"
 
 #include <cmath>
 #include <cstring>

@@ -23,27 +23,27 @@ include_directories(${includes}
                     ${GLM_INCLUDE_DIR}
                     ${KODI_INCLUDE_DIR}/..) # Hack way with "/..", need bigger Kodi cmake rework to match right include ways (becomes done in future)
 
-set(FISH_SOURCES src/analyst.cpp
-                 src/audiobuffer.cpp
-                 src/blurengine.cpp
-                 src/cpudetect.cpp
-                 src/fische.cpp
-                 src/fishbmc_addon.cpp
-                 src/screenbuffer.cpp
-                 src/vector.cpp
-                 src/vectorfield.cpp
-                 src/wavepainter.cpp)
+set(FISH_SOURCES src/fishbmc_addon.cpp
+                 src/fische/analyst.cpp
+                 src/fische/audiobuffer.cpp
+                 src/fische/blurengine.cpp
+                 src/fische/cpudetect.cpp
+                 src/fische/fische.cpp
+                 src/fische/screenbuffer.cpp
+                 src/fische/vector.cpp
+                 src/fische/vectorfield.cpp
+                 src/fische/wavepainter.cpp)
 
-set(FISH_HEADERS src/analyst.h
-                 src/audiobuffer.h
-                 src/blurengine.h
-                 src/fische.h
-                 src/fishbmc_addon.h
-                 src/fische_internal.h
-                 src/screenbuffer.h
-                 src/vectorfield.h
-                 src/vector.h
-                 src/wavepainter.h)
+set(FISH_HEADERS src/fishbmc_addon.h
+                 src/fische/analyst.h
+                 src/fische/audiobuffer.h
+                 src/fische/blurengine.h
+                 src/fische/fische.h
+                 src/fische/fische_internal.h
+                 src/fische/screenbuffer.h
+                 src/fische/vectorfield.h
+                 src/fische/vector.h
+                 src/fische/wavepainter.h)
 
 build_addon(visualization.fishbmc FISH DEPLIBS)
 
