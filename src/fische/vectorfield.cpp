@@ -15,7 +15,6 @@
 #include <cmath>
 #include <thread>
 
-#define N_FIELDS 20
 #define MAX_THREADS 8
 
 namespace fische
@@ -43,21 +42,35 @@ CVectorField::CVectorField(CFische* parent, double& progress, bool& cancel)
   if (useStoredVectors)
   {
     size_t bytes = m_fische->ReadVectors((void**)(&m_fields));
-    if (bytes)
+    if (bytes >= m_fieldsize && bytes % m_fieldsize == 0)
     {
       progress = 1.0;
       m_n_fields = bytes / m_fieldsize;
       m_field = m_fields;
       return;
     }
+    else if (bytes > 0)
+    {
+      // Invalid data size, free and regenerate
+      free(m_fields);
+      m_fields = nullptr;
+    }
   }
 
   // if not, recalculate everything
   // NOTE: Leave by `malloc` as the memory can used from "C" code where makes `free(...)`!
-  m_fields = static_cast<uint16_t*>(malloc(N_FIELDS * m_fieldsize));
-  m_n_fields = N_FIELDS;
+  m_fields = static_cast<uint16_t*>(malloc(VECTOR_N_FIELDS * m_fieldsize));
+  if (m_fields == nullptr)
+  {
+    progress = 0.0;
+    cancel = true;
+    m_cancelled = true;
+    return;
+  }
 
-  for (uint_fast8_t i = 0; i < N_FIELDS; ++i)
+  m_n_fields = VECTOR_N_FIELDS;
+
+  for (uint_fast8_t i = 0; i < VECTOR_N_FIELDS; ++i)
   {
     if (cancel)
     {
@@ -67,11 +80,11 @@ CVectorField::CVectorField(CFische* parent, double& progress, bool& cancel)
 
     FillField(i);
     progress = (i + 1);
-    progress /= N_FIELDS;
+    progress /= VECTOR_N_FIELDS;
   }
 
   // If we use stored vectors and was not present then store it now
-  if (useStoredVectors)
+  if (useStoredVectors && !m_cancelled)
     m_fische->WriteVectors(m_fields, m_n_fields * m_fieldsize);
 
   progress = 1.0;
@@ -86,10 +99,13 @@ CVectorField::~CVectorField()
 
 void CVectorField::Change()
 {
+  if (!m_fields)
+    return;
+
   uint16_t* n = m_field;
   while (n == m_field)
   {
-    m_field = m_fields + uint16_t(rand()) % m_n_fields * m_width * m_height;
+    m_field = m_fields + (rand_r(&m_rand_seed) % m_n_fields) * m_width * m_height;
   }
 }
 
@@ -110,13 +126,16 @@ inline void CVectorField::Validate(fische::vector* vec, double x, double y)
     vec->x -= 1;
   while (y + vec->y < 2)
     vec->y += 1;
-  while (y + vec->y > m_height - 2)
+  while (y + vec->y > m_height - 3)
     vec->y -= 1;
 }
 
 void CVectorField::FillField(uint_fast8_t fieldno)
 {
-  uint16_t* field = m_fields + fieldno * m_fieldsize / 2;
+  if (!m_fields)
+    return;
+
+  uint16_t* field = m_fields + fieldno * m_fieldsize / sizeof(uint16_t);
 
   // threads maximum is 8
   std::thread vec_threads[MAX_THREADS];

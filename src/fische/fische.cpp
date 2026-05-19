@@ -152,7 +152,7 @@ bool CFische::Start()
 uint32_t* CFische::Render()
 {
   // only if init completed
-  if (m_init_progress >= 1)
+  if (m_init_progress >= 1 && m_vectorfield)
   {
     // analyse sound data
     m_audiobuffer->Lock();
@@ -281,6 +281,11 @@ void CFische::ThreadIndicateBusy()
     m_screenbuffer->Line(c4.x, c4.y, c1.x, c1.y, 0xffffffff);
     m_screenbuffer->Unlock();
   }
+}
+
+size_t CFische::GetMaxVectorsSize() const
+{
+  return 2048 * 2048 * sizeof(uint16_t) * VECTOR_N_FIELDS;
 }
 
 bool CFische::SetWidthHeight(uint16_t width, uint16_t height)

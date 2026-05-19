@@ -86,6 +86,7 @@ public:
   inline FISCHE_LINESTYLE GetLineStyle() const { return line_style; }
   inline double GetAmplification() const { return amplification; }
   CScreenBuffer* GetScreenbuffer() const { return m_screenbuffer.get(); }
+  size_t GetMaxVectorsSize() const;
 
   bool SetWidthHeight(uint16_t width, uint16_t height);
   bool SetUsedCPUs(uint8_t used_cpus);

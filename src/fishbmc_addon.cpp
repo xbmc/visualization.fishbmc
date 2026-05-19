@@ -10,6 +10,8 @@
 
 #include "fishbmc_addon.h"
 
+#include "md5.h"
+
 #include <cmath>
 #include <cstring>
 #include <fstream>
@@ -390,41 +392,57 @@ void CVisualizationFishBMC::WriteVectors(const void* data, size_t bytes)
     kodi::Log(ADDON_LOG_ERROR, "File write \"%s\": Size mismatch of writed file", filename.c_str());
     return;
   }
+
+  const std::string hash = hashing::md5::hash_as_hex(data, bytes);
+  kodi::addon::SetSettingString("file_md5", hash);
 }
 
 size_t CVisualizationFishBMC::ReadVectors(void** data)
 {
+  const std::string hashWanted = kodi::addon::GetSettingString("file_md5");
   const std::string filename =
       kodi::addon::GetUserPath("data/vector-" + std::to_string(CFische::GetHeight()) + "px");
-  if (!kodi::vfs::FileExists(filename))
+  if (hashWanted.empty() || !kodi::vfs::FileExists(filename))
     return 0;
 
   kodi::vfs::CFile vectorsfile;
-
-  // open the file
-  if (!vectorsfile.OpenFile(filename))
+  try
   {
-    kodi::Log(ADDON_LOG_ERROR, "File read \"%s\": Failed to open file", filename);
+    // open the file
+    if (!vectorsfile.OpenFile(filename))
+      throw std::string("Failed to open file");
+
+    ssize_t size = vectorsfile.GetLength();
+    if (size <= 0 || size > static_cast<ssize_t>(CFische::GetMaxVectorsSize()))
+      throw std::string("Unable to get correct size of file");
+
+    *data = malloc(size_t(size));
+    if (*data == nullptr)
+      throw std::string("Failed to allocate memory");
+
+    ssize_t sizeRead = vectorsfile.Read(*data, size_t(size));
+    if (sizeRead < 0 || sizeRead != size)
+    {
+      free(*data);
+      *data = nullptr;
+      throw std::string("Size mismatch of readed file");
+    }
+
+    const std::string hashGenerated = hashing::md5::hash_as_hex(*data, size);
+    if (hashGenerated != hashWanted)
+    {
+      free(*data);
+      *data = nullptr;
+      throw std::string("hash not match readed file");
+    }
+
+    return sizeRead;
+  }
+  catch (const std::string& error_text)
+  {
+    kodi::Log(ADDON_LOG_ERROR, "File read \"%s\": %s", filename.c_str(), error_text.c_str());
     return 0;
   }
-
-  ssize_t size = vectorsfile.GetLength();
-  if (size <= 0)
-  {
-    kodi::Log(ADDON_LOG_ERROR, "File read \"%s\": Unable to get size of file", filename);
-    return 0;
-  }
-
-  *data = malloc(size_t(size));
-  ssize_t sizeRead = vectorsfile.Read(*data, size_t(size));
-  if (sizeRead < 0 || sizeRead != size)
-  {
-    kodi::Log(ADDON_LOG_ERROR, "File read \"%s\": Size mismatch of readed file", filename);
-    free(*data);
-    return 0;
-  }
-
-  return sizeRead;
 }
 
 void CVisualizationFishBMC::DeleteVectors()

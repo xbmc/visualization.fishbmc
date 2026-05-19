@@ -13,6 +13,8 @@
 #include <cstddef>
 #include <cstdint>
 
+#define VECTOR_N_FIELDS 20
+
 namespace fische
 {
 

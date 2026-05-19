@@ -24,6 +24,7 @@ include_directories(${includes}
                     ${KODI_INCLUDE_DIR}/..) # Hack way with "/..", need bigger Kodi cmake rework to match right include ways (becomes done in future)
 
 set(FISH_SOURCES src/fishbmc_addon.cpp
+                 src/md5.cpp
                  src/fische/analyst.cpp
                  src/fische/audiobuffer.cpp
                  src/fische/blurengine.cpp
@@ -36,6 +37,7 @@ set(FISH_SOURCES src/fishbmc_addon.cpp
                  src/fische/wavepainter.cpp)
 
 set(FISH_HEADERS src/fishbmc_addon.h
+                 src/md5.h
                  src/fische/analyst.hpp
                  src/fische/audiobuffer.hpp
                  src/fische/blurengine.hpp

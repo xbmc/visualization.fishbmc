@@ -29,6 +29,11 @@ vector vector_normal(vector* self)
 vector vector_single(vector* self)
 {
   double l = vector_length(self);
+  if (l < 1e-9)
+  {
+    vector r = {0.0, 0.0};
+    return r;
+  }
   vector r;
   r.x = self->x / l;
   r.y = self->y / l;
