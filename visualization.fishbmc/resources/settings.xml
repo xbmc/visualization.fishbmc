@@ -35,6 +35,14 @@
           <default>true</default>
           <control type="toggle" />
         </setting>
+				<setting id="file_md5" type="string" label="0" help="0">
+					<visible>false</visible>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<default/>
+					<control type="spinner" format="string"/>
+				</setting>
       </group>
     </category>
   </section>

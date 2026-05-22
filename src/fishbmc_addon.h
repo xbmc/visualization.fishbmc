@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2005-2022 Team Kodi (https://kodi.tv)
+ *  Copyright (C) 2005-2026 Team Kodi (https://kodi.tv)
  *  Copyright (C) 2012 Marcel Ebmer
  *
  *  SPDX-License-Identifier: GPL-2.0-or-later
@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "fische.h"
+#include "fische/fische.hpp"
 
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
@@ -33,17 +33,15 @@ struct sCoord
 
 class ATTR_DLL_LOCAL CVisualizationFishBMC : public kodi::addon::CAddonBase,
                                              public kodi::addon::CInstanceVisualization,
-                                             public kodi::gui::gl::CShaderProgram
+                                             public kodi::gui::gl::CShaderProgram,
+                                             public fische::CFische
 {
 public:
   CVisualizationFishBMC();
-  ~CVisualizationFishBMC() override;
+  ~CVisualizationFishBMC() override = default;
 
-  bool Start(int channels,
-             int samplesPerSec,
-             int bitsPerSample,
-             const std::string& songName) override;
-  void Stop() override;
+  bool AudioStart(int channels, int samplesPerSec, int bitsPerSample) override;
+  void AudioStop() override;
   void Render() override;
   void AudioData(const float* audioData, size_t audioDataLength) override;
   ADDON_STATUS SetSetting(const std::string& settingName,
@@ -51,6 +49,10 @@ public:
 
   void OnCompiledAndLinked() override;
   bool OnEnabled() override;
+
+  void WriteVectors(const void* data, size_t bytes) override;
+  size_t ReadVectors(void** data) override;
+  void OnBeat(double frames_per_beat) override;
 
 private:
   void start_render();
@@ -65,10 +67,7 @@ private:
                      float tex_right,
                      float tex_top,
                      float tex_bottom);
-  static void on_beat(void* handler, double frames_per_beat);
-  static void write_vectors(void* handler, const void* data, size_t bytes);
-  static size_t read_vectors(void* handler, void** data);
-  void delete_vectors();
+  void DeleteVectors();
 
   bool m_startOK = false;
   bool m_shaderLoaded = false;
@@ -89,7 +88,6 @@ private:
   GLuint m_indexVBO = 0;
   GLuint m_texture = 0;
 
-  FISCHE* m_fische = nullptr;
   float m_aspect;
   bool m_isrotating;
   float m_angle;

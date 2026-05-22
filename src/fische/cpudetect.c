@@ -1,13 +1,12 @@
 /*
- *  Copyright (C) 2005-2022 Team Kodi (https://kodi.tv)
+ *  Copyright (C) 2005-2026 Team Kodi (https://kodi.tv)
  *  Copyright (C) 2012 Marcel Ebmer
  *
  *  SPDX-License-Identifier: GPL-2.0-or-later
  *  See LICENSE.md for more information.
  */
 
-#include "fische_internal.h"
-
+#include <stdint.h>
 #include <string.h>
 
 #if defined(__x86_64__)

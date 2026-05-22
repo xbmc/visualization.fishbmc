@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2005-2022 Team Kodi (https://kodi.tv)
+ *  Copyright (C) 2005-2026 Team Kodi (https://kodi.tv)
  *  Copyright (C) 2012 Marcel Ebmer
  *
  *  SPDX-License-Identifier: GPL-2.0-or-later
@@ -9,12 +9,55 @@
 #ifndef FISCHE_H
 #define FISCHE_H
 
-/* int types */
 #include <stdint.h>
-/* size_t */
 #include <stdlib.h>
 
-typedef struct fische
+#ifdef WIN32
+#define rand_r(_seed) (_seed == _seed ? rand() : rand())
+#endif
+
+/* audio sample formats */
+typedef enum FISCHE_AUDIOFORMAT
+{
+  FISCHE_AUDIOFORMAT_U8,
+  FISCHE_AUDIOFORMAT_S8,
+  FISCHE_AUDIOFORMAT_U16,
+  FISCHE_AUDIOFORMAT_S16,
+  FISCHE_AUDIOFORMAT_U32,
+  FISCHE_AUDIOFORMAT_S32,
+  FISCHE_AUDIOFORMAT_FLOAT,
+  FISCHE_AUDIOFORMAT_DOUBLE,
+  _FISCHE__AUDIOFORMAT_LAST_
+} FISCHE_AUDIOFORMAT;
+
+/* pixel formats */
+typedef enum FISCHE_PIXELFORMAT
+{
+  FISCHE_PIXELFORMAT_0xRRGGBBAA,
+  FISCHE_PIXELFORMAT_0xAABBGGRR,
+  FISCHE_PIXELFORMAT_0xAARRGGBB,
+  FISCHE_PIXELFORMAT_0xBBGGRRAA,
+  _FISCHE__PIXELFORMAT_LAST_
+} FISCHE_PIXELFORMAT;
+
+/* blur style */
+typedef enum FISCHE_BLUR
+{
+  FISCHE_BLUR_SLICK,
+  FISCHE_BLUR_FUZZY,
+  _FISCHE__BLUR_LAST_
+} FISCHE_BLUR;
+
+/* line style */
+typedef enum FISCHE_LINESTYLE
+{
+  FISCHE_LINESTYLE_THIN,
+  FISCHE_LINESTYLE_THICK,
+  FISCHE_LINESTYLE_ALPHA_SIMULATION,
+  _FISCHE__LINESTYLE_LAST_
+} FISCHE_LINESTYLE;
+
+typedef struct FISCHE
 {
 
   /* 16 <= width <= 2048
@@ -39,21 +82,21 @@ typedef struct fische
   /* see below (audio format enum)
      * DEFAULT: FISCHE_AUDIOFORMAT_FLOAT
      * constant after fische_start() */
-  uint8_t audio_format;
+  FISCHE_AUDIOFORMAT audio_format;
 
   /* see below (pixel format enum)
      * DEFAULT: FISCHE_PIXELFORMAT_0xAABBGGRR
      * constant after fische_start() */
-  uint8_t pixel_format;
+  FISCHE_PIXELFORMAT pixel_format;
 
   /* see below (blur mode enum)
      * DEFAULT: FISCHE_BLUR_SLICK
      * constant after fische_start() */
-  uint8_t blur_mode;
+  FISCHE_BLUR blur_mode;
 
   /* see below (line style enum)
      * DEFAULT: FISCHE_LINESTYLE_ALPHA_SIMULATION */
-  uint8_t line_style;
+  FISCHE_LINESTYLE line_style;
 
   /* 0.5 <= scale <= 2.0
      * DEFAULT: 1.0
@@ -63,6 +106,10 @@ typedef struct fische
   /* -10 <= amplification <= 10
      * DEFAULT: 0 */
   double amplification;
+
+  /* true (!=0) or false (0)
+     * DEFAULT: 0 */
+  uint8_t vector_store_load_usage;
 
   /* if non-NULL,
      * fische calls this to read vector fields from an external source
@@ -87,21 +134,19 @@ typedef struct fische
 
   /* read only */
   const char* error_text;
-
-  void* priv;
-
 } FISCHE;
-
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-
   /* creates a new FISCHE object
-     * and initialzes it with default values */
+   * and initialzes it with default values */
   FISCHE* fische_new();
+
+  /* destructs the FISCHE object */
+  void fische_free(FISCHE* handle);
 
   /* starts FISCHE */
   int fische_start(FISCHE* handle);
@@ -109,57 +154,11 @@ extern "C"
   /* makes the next frame available */
   uint32_t* fische_render(FISCHE* handle);
 
-  /* destructs the FISCHE object */
-  void fische_free(FISCHE* handle);
-
   /* inserts audio data */
   void fische_audiodata(FISCHE* handle, const void* data, size_t data_size);
-
 
 #ifdef __cplusplus
 }
 #endif
-
-
-/* audio sample formats */
-enum
-{
-  FISCHE_AUDIOFORMAT_U8,
-  FISCHE_AUDIOFORMAT_S8,
-  FISCHE_AUDIOFORMAT_U16,
-  FISCHE_AUDIOFORMAT_S16,
-  FISCHE_AUDIOFORMAT_U32,
-  FISCHE_AUDIOFORMAT_S32,
-  FISCHE_AUDIOFORMAT_FLOAT,
-  FISCHE_AUDIOFORMAT_DOUBLE,
-  _FISCHE__AUDIOFORMAT_LAST_
-};
-
-/* pixel formats */
-enum
-{
-  FISCHE_PIXELFORMAT_0xRRGGBBAA,
-  FISCHE_PIXELFORMAT_0xAABBGGRR,
-  FISCHE_PIXELFORMAT_0xAARRGGBB,
-  FISCHE_PIXELFORMAT_0xBBGGRRAA,
-  _FISCHE__PIXELFORMAT_LAST_
-};
-
-/* blur style */
-enum
-{
-  FISCHE_BLUR_SLICK,
-  FISCHE_BLUR_FUZZY,
-  _FISCHE__BLUR_LAST_
-};
-
-/* line style */
-enum
-{
-  FISCHE_LINESTYLE_THIN,
-  FISCHE_LINESTYLE_THICK,
-  FISCHE_LINESTYLE_ALPHA_SIMULATION,
-  _FISCHE__LINESTYLE_LAST_
-};
 
 #endif
