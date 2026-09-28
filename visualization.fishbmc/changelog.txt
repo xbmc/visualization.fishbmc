@@ -1,3 +1,33 @@
+v22.1.1 (2026-09-28):
+- Updated GLM from 1.0.1 to 1.0.3
+- Updated translations
+
+v22.1.0 (2026-05-22):
+- Updated ANGLE from 3712 to the Kodi 7258 fork
+- Fixed Windows crashes when using stored vector files
+- Updated visualization API support and added crash checks
+- Reworked fische internals in C++ while retaining a C interface
+- Raised the CMake minimum version to 3.18
+
+v22.0.3 (2026-02-22):
+- Updated minimum add-on version requirements
+- Updated translations
+
+v22.0.2 (2025-08-12):
+- Use std::vector for visualization axes
+- Updated translations and corrected language directories
+
+v22.0.1 (2025-07-22):
+- Updated GLM to 1.0.1
+- Fixed OpenGL discovery on GLVND Linux systems
+- Updated translations
+
+v22.0.0 (2024-07-20):
+- Updated for Kodi 22 Piers
+
+v21.0.0 (2023-02-11):
+- Updated for Kodi 21 Omega
+
 v20.2.0 (2022-09-09):
 - Kodi visualization API update to version 4.0.0
 
