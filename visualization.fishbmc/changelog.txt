@@ -1,3 +1,6 @@
+v22.1.2 (2026-09-28):
+- Fixed ANGLE installed headers and UWP platform definition
+
 v22.1.1 (2026-09-28):
 - Updated GLM from 1.0.1 to 1.0.3
 - Updated translations
